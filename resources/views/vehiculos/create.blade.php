@@ -1,0 +1,94 @@
+@extends('layouts.app')
+
+@section('content')
+<h1>➕ Nuevo Vehículo</h1>
+
+<form action="{{ route('vehiculos.store') }}" method="POST">
+    @csrf
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Patente</label>
+                <input type="text" name="patente" class="form-control" value="{{ old('patente') }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Marca</label>
+                <input type="text" name="marca" class="form-control" value="{{ old('marca') }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Modelo</label>
+                <input type="text" name="modelo" class="form-control" value="{{ old('modelo') }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Tipo de Vehículo</label>
+                <select name="tipo" class="form-control" required>
+                    <option value="">Seleccionar tipo</option>
+                    <option value="camión" {{ old('tipo') == 'camión' ? 'selected' : '' }}>Camión</option>
+                    <option value="camioneta" {{ old('tipo') == 'camioneta' ? 'selected' : '' }}>Camioneta</option>
+                    <option value="bascula" {{ old('tipo') == 'bascula' ? 'selected' : '' }}>Bascúla</option>
+                    <option value="acoplado" {{ old('tipo') == 'acoplado' ? 'selected' : '' }}>Acoplado</option>
+                    <option value="semirremolque" {{ old('tipo') == 'semirremolque' ? 'selected' : '' }}>Semirremolque</option>
+                    <option value="tolva" {{ old('tipo') == 'tolva' ? 'selected' : '' }}>Tolva</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Capacidad (kg)</label>
+                <input type="number" name="capacidad_kg" class="form-control" value="{{ old('capacidad_kg') }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Fecha de Compra</label>
+                <input type="date" name="fecha_compra" class="form-control" value="{{ old('fecha_compra') }}" required>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mostrar errores de validación -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <button type="submit" class="btn btn-success btn-sm">Guardar Vehículo</button>
+
+    <!-- Botón que abre el modal de confirmación al salir -->
+    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#confirmExitModal">
+        Volver
+    </button>
+</form>
+
+<!-- Modal de Confirmación al Salir -->
+<div class="modal fade" id="confirmExitModal" tabindex="-1" aria-labelledby="confirmExitModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmExitModalLabel">¿Salir sin guardar?</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Has comenzado a registrar un vehículo. Si sales ahora, los datos ingresados se perderán.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Seguir registrando</button>
+                <a href="{{ route('vehiculos.index') }}" class="btn btn-danger btn-sm">Salir sin guardar</a>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

@@ -1,0 +1,22 @@
+{
+    "name": "LogísticaApp",
+    "short_name": "LogApp",
+    "description": "Sistema de gestión de transporte y flota",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1a1a1a",
+    "theme_color": "#0056b3",
+    "orientation": "portrait",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
