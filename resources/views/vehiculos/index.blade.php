@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     'bascula': ['bascula'],
                     'acoplado': ['acoplado'],
                     'tolva': ['tolva'],
-                    'semiremolque': ['semiremolque']
+                    'semirremolque': ['semirremolque']
                 };
 
                 // Obtenemos los valores esperados para el filtro

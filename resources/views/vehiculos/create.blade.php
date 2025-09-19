@@ -52,7 +52,7 @@
                             <option value="camioneta" {{ old('tipo') == 'camioneta' ? 'selected' : '' }}>Camioneta</option>
                             <option value="bascula" {{ old('tipo') == 'bascula' ? 'selected' : '' }}>Báscula</option>
                             <option value="acoplado" {{ old('tipo') == 'acoplado' ? 'selected' : '' }}>Acoplado</option>
-                            <option value="semiremolque" {{ old('tipo') == 'semiremolque' ? 'selected' : '' }}>Semiremolque</option>
+                            <option value="semirremolque" {{ old('tipo') == 'semirremolque' ? 'selected' : '' }}>Semirremolque</option>
                             <option value="tolva" {{ old('tipo') == 'tolva' ? 'selected' : '' }}>Tolva</option>
                         </select>
                         @error('tipo')

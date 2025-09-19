@@ -74,24 +74,25 @@ class VehiculoController extends Controller
     public function update(Request $request, $id)
     {
         $vehiculo = Vehiculo::findOrFail($id);
-
+    
         $request->validate([
-            'patente' => 'required|string|max:10|unique:vehiculos,patente',
-            'marca' => 'required|string|max:50',
-            'modelo' => 'required|string|max:50',
-            'tipo' => 'required|in:camion,camioneta,bascula,acoplado,semiremolque,tolva',
-            'capacidad_kg' => 'required|numeric|min:100',
-            'fecha_compra' => 'required|date',
+            'patente' => 'required|unique:vehiculos,patente,' . $id,
+            'marca' => 'required|string|max:255',
+            'modelo' => 'required|string|max:255',
+            'tipo' => 'required|in:camion,semirremolque,acoplado,tractocamion',
             'kilometraje_actual' => 'nullable|integer|min:0',
-            'ultimo_mantenimiento_km' => 'nullable|integer|min:0',
-            'intervalo_mantenimiento' => 'nullable|integer|min:1000',
+            'proximo_mantenimiento' => 'nullable|date|after_or_equal:today',
+            'estado' => 'required|in:activo,inactivo,en mantenimiento',
+        ], [
+            'patente.unique' => 'Ya existe un vehículo con esa patente.',
+            'patente.required' => 'La patente es obligatoria.',
         ]);
+    
         $vehiculo->update($request->all());
-
-        return redirect()->route('vehiculos.index')
-            ->with('success', '✅ Vehículo actualizado correctamente.');
+    
+        return redirect()->route('vehiculos.show', $vehiculo->id)
+            ->with('info', '✅ Vehículo actualizado correctamente.');
     }
-
     /**
      * Eliminar un vehículo.
      */
