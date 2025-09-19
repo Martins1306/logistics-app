@@ -79,8 +79,8 @@
 <div class="card mb-4">
     <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
         <h5>🔧 Historial de Mantenimiento</h5>
-        <a href="{{ route('mantenimientos.create', $vehiculo->id) }}" class="btn btn-dark btn-sm">
-            + Nuevo Registro
+        <a href="{{ route('mantenimientos.create', $vehiculo->id) }}" class="btn btn-warning">
+        <i class="fas fa-plus-circle me-1"></i>+ Nuevo Registro
         </a>
     </div>
     <div class="card-body">
@@ -119,6 +119,21 @@
                         </td>
                     </tr>
                     @endforeach
+                    
+                   <!-- Alerta de mantenimiento: solo si tiene configuración -->
+                    @if($vehiculo->intervalo_mantenimiento && $vehiculo->necesitaMantenimiento())
+                     <div class="alert alert-warning mt-3">
+                       <strong>⚠️ Alerta de Mantenimiento</strong><br>
+                        El vehículo superó los {{ number_format($vehiculo->proximo_mantenimiento) }} km. 
+                        Se recomienda realizar mantenimiento inmediatamente.
+                     </div>
+                     @elseif(is_null($vehiculo->intervalo_mantenimiento))
+                     <div class="alert alert-info mt-3">
+                        <strong>ℹ️ Sin programa de mantenimiento</strong><br>
+                          No se ha definido un intervalo de mantenimiento para este vehículo.
+                    </div>
+                    @endif
+
                 </tbody>
             </table>
         @endif

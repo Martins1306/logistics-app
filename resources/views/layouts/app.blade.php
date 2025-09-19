@@ -249,6 +249,16 @@
                            href="{{ route('choferes.index') }}">
                             <i class="bi bi-person-badge"></i> Choferes
                         </a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('productos.index') }}">
+                            <i class="fas fa-box"></i> Productos
+                        </a>
+                    </li>
+                    </li>
+                    <li class="nav-item">
+                         <a class="nav-link" href="{{ route('clientes.index') }}">
+                          <i class="fas fa-users"></i> Clientes
+                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('gastos.*') ? 'active' : '' }}"

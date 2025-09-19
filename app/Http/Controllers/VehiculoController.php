@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehiculo;
+use App\Models\Viaje;
+use App\Models\Mantenimiento;
 use Illuminate\Http\Request;
 
 class VehiculoController extends Controller
@@ -29,26 +31,27 @@ class VehiculoController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
         $request->validate([
-            'patente' => 'required|unique:vehiculos',
-            'marca' => 'required|string|max:100',
-            'modelo' => 'required|string|max:100',
-            'tipo' => 'required|in:camión,camioneta,bascula,acoplado,semirremolque,tolva', // ✅ Incluye "bascula"
-            'capacidad_kg' => 'required|integer|min:1',
+            'patente' => 'required|string|max:10|unique:vehiculos,patente',
+            'marca' => 'required|string|max:50',
+            'modelo' => 'required|string|max:50',
+            'tipo' => 'required|in:camion,camioneta,bascula,acoplado,semiremolque,tolva',
+            'capacidad_kg' => 'required|numeric|min:100',
             'fecha_compra' => 'required|date',
+            'kilometraje_actual' => 'nullable|integer|min:0',
+            'ultimo_mantenimiento_km' => 'nullable|integer|min:0',
+            'intervalo_mantenimiento' => 'nullable|integer|min:1000',
+        
         ]);
 
-        // Crear el vehículo
         Vehiculo::create($request->all());
 
-        // Redirigir con mensaje de éxito
         return redirect()->route('vehiculos.index')
             ->with('success', '✅ Vehículo agregado correctamente.');
     }
 
     /**
-     * Mostrar los detalles de un vehículo.
+     * Mostrar los detalles de un vehículo, incluyendo viajes y mantenimientos.
      */
     public function show($id)
     {
@@ -73,14 +76,16 @@ class VehiculoController extends Controller
         $vehiculo = Vehiculo::findOrFail($id);
 
         $request->validate([
-            'patente' => 'required|unique:vehiculos,patente,' . $id,
-            'marca' => 'required|string|max:100',
-            'modelo' => 'required|string|max:100',
-            'tipo' => 'required|in:camión,camioneta,bascula,acoplado,semirremolque,tolva', // ✅ Mismo que en store
-            'capacidad_kg' => 'required|integer|min:1',
+            'patente' => 'required|string|max:10|unique:vehiculos,patente',
+            'marca' => 'required|string|max:50',
+            'modelo' => 'required|string|max:50',
+            'tipo' => 'required|in:camion,camioneta,bascula,acoplado,semiremolque,tolva',
+            'capacidad_kg' => 'required|numeric|min:100',
             'fecha_compra' => 'required|date',
+            'kilometraje_actual' => 'nullable|integer|min:0',
+            'ultimo_mantenimiento_km' => 'nullable|integer|min:0',
+            'intervalo_mantenimiento' => 'nullable|integer|min:1000',
         ]);
-
         $vehiculo->update($request->all());
 
         return redirect()->route('vehiculos.index')

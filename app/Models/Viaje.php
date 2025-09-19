@@ -9,13 +9,14 @@ class Viaje extends Model
 {
     use HasFactory;
 
-    // Tabla asociada (opcional)
+    // Nombre de la tabla principal
     protected $table = 'viajes';
 
-    // Campos que se pueden asignar masivamente (una sola vez)
+    // Campos que se pueden asignar masivamente
     protected $fillable = [
         'vehiculo_id',
         'chofer_id',
+        'cliente_id', 
         'origen',
         'destino',
         'fecha_salida',
@@ -23,9 +24,10 @@ class Viaje extends Model
         'kilometros',
         'descripcion_carga',
         'estado',
+        'tipo', // ← Añadido
     ];
 
-    // Atributos de fecha
+    // Atributos que deben tratarse como fechas
     protected $dates = [
         'fecha_salida',
         'fecha_llegada',
@@ -38,18 +40,30 @@ class Viaje extends Model
     {
         return $this->belongsTo(Vehiculo::class);
     }
-
-    // Relación: un viaje puede llevar muchos productos
-    public function productos()
+  
+    // Relación: un viaje un cliente  
+    public function cliente()
     {
-        return $this->belongsToMany(Producto::class)
-                    ->withPivot('cantidad', 'notas')
-                    ->withTimestamps();
+        return $this->belongsTo(Cliente::class);
     }
 
     // Relación: un viaje pertenece a un chofer
     public function chofer()
     {
         return $this->belongsTo(Chofer::class);
+    }
+
+    // Relación muchos a muchos: un viaje lleva muchos productos
+    // Tabla pivote: producto_viaje (sin ID autoincremental)
+    public function productos()
+    {
+        return $this->belongsToMany(
+            Producto::class,           // Modelo relacionado
+            'producto_viaje',          // Nombre de la tabla pivote
+            'viaje_id',                // FK en pivote hacia este modelo
+            'producto_id'              // FK en pivote hacia Producto
+        )
+        ->withPivot('cantidad', 'notas')  // Campos adicionales en pivote
+        ->withTimestamps();               // created_at y updated_at en pivote
     }
 }

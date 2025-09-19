@@ -2,104 +2,194 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Gasto;
 use App\Models\Viaje;
 use App\Models\Producto;
 use App\Models\Vehiculo;
 use App\Models\Chofer;
-use Illuminate\Support\Facades\DB;
+use App\Models\Gasto;
 use Illuminate\Support\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     /**
-     * Mostrar el dashboard con estadísticas generales y alertas
+     * Mostrar el dashboard principal.
      */
     public function index()
     {
-        // 1. Totales generales
-        $totalViajes = Viaje::count();
-        $totalGastos = Gasto::sum('monto');
-        $viajesEnCurso = Viaje::where('estado', 'en curso')->count();
-        $totalProductos = Producto::count();
-
-        // 2. Gastos por vehículo (gráfico de barras)
-        $gastosPorVehiculo = Gasto::select(
-                'vehiculos.patente',
-                DB::raw('SUM(gastos.monto) as total')
-            )
-            ->join('vehiculos', 'gastos.vehiculo_id', '=', 'vehiculos.id')
-            ->groupBy('vehiculos.id', 'vehiculos.patente')
-            ->orderBy('total', 'desc')
-            ->get();
-
-        // 3. Viajes completados por mes (últimos 12 meses)
-        $viajesPorMes = [];
-        $meses = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $viajesPorMes[] = Viaje::whereYear('fecha_salida', $month->year)
-                ->whereMonth('fecha_salida', $month->month)
-                ->where('estado', 'completado')
-                ->count();
-            $meses[] = $month->format('M'); // Ej: "Sep", "Ago"
+        // === VIAJES ===
+        try {
+            $totalViajes = Viaje::count();
+            $viajesEnCurso = Viaje::where('estado', 'en curso')->count();
+        } catch (\Exception $e) {
+            $totalViajes = 0;
+            $viajesEnCurso = 0;
         }
 
-        // 4. Alertas: Vehículos que necesitan mantenimiento
-        $vehiculosParaMantenimiento = Vehiculo::whereNotNull('kilometraje_actual')
-            ->whereRaw('kilometraje_actual >= ultimo_mantenimiento_km + intervalo_mantenimiento')
-            ->get();
+        // === GASTOS ===
+        try {
+            $totalGastos = Gasto::sum('monto');
 
-        // 5. Alertas: Choferes con licencia vencida
-        $choferesVencidos = Chofer::where('licencia_vencimiento', '<', now())->get();
+            $gastosPorVehiculo = Gasto::join('vehiculos', 'gastos.vehiculo_id', '=', 'vehiculos.id')
+                ->selectRaw('vehiculos.patente, SUM(gastos.monto) as total')
+                ->groupBy('vehiculos.id', 'vehiculos.patente')
+                ->orderByDesc('total')
+                ->take(5)
+                ->get();
+        } catch (\Exception $e) {
+            $totalGastos = 0;
+            $gastosPorVehiculo = collect();
+        }
 
-        // 6. Viajes en curso (para mostrar en el dashboard)
-        $viajesActivos = Viaje::with('chofer', 'vehiculo')
-            ->where('estado', 'en curso')
-            ->orderBy('fecha_salida', 'desc')
-            ->limit(5)
-            ->get();
+        // === PRODUCTOS ===
+        try {
+            $totalProductos = Producto::count();
+        } catch (\Exception $e) {
+            $totalProductos = 0;
+        }
 
-        // 7. Retornar vista con todas las variables
-        return view('dashboard.index', compact(
+        // === VEHÍCULOS PRÓXIMOS A MANTENIMIENTO ===
+        try {
+            $vehiculosParaMantenimiento = Vehiculo::whereNotNull('proximo_mantenimiento')
+                ->where('proximo_mantenimiento', '<=', now()->addDays(15))
+                ->get();
+        } catch (\Exception $e) {
+            $vehiculosParaMantenimiento = collect();
+        }
+
+        // === CHOFERES CON LICENCIA VENCIDA ===
+        try {
+            $choferesVencidos = Chofer::whereNotNull('licencia_vencimiento')
+                ->where('licencia_vencimiento', '<', now())
+                ->get();
+        } catch (\Exception $e) {
+            $choferesVencidos = collect();
+        }
+
+        // === VIAJES COMPLETADOS POR MES (últimos 12 meses) ===
+        $meses = [];
+        $viajesPorMes = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $mes = Carbon::now()->subMonths($i);
+            $meses[] = $mes->format('F');
+            
+            try {
+                $count = Viaje::where('estado', 'completado')
+                    ->whereYear('fecha_llegada', $mes->year)
+                    ->whereMonth('fecha_llegada', $mes->month)
+                    ->count();
+            } catch (\Exception $e) {
+                $count = 0;
+            }
+
+            $viajesPorMes[] = $count;
+        }
+
+        // === ESTADÍSTICAS POR TIPO DE VIAJE ===
+        try {
+            $viajes = Viaje::select('tipo')->get();
+
+            $totalAgricola = $viajes->filter(function ($v) {
+                $tipo = strtolower($v->tipo ?? '');
+                return str_contains($tipo, 'agricol') || 
+                       str_contains($tipo, 'hortaliza') || 
+                       str_contains($tipo, 'fruta') || 
+                       str_contains($tipo, 'cereal');
+            })->count();
+
+            $totalConstruccion = $viajes->filter(function ($v) {
+                $tipo = strtolower($v->tipo ?? '');
+                return str_contains($tipo, 'construccion') || 
+                       str_contains($tipo, 'materiales') || 
+                       str_contains($tipo, 'herramienta') || 
+                       str_contains($tipo, 'cemento') || 
+                       str_contains($tipo, 'acero') || 
+                       str_contains($tipo, 'ladrillo');
+            })->count();
+
+            $sinTipo = $viajes->filter(function ($v) {
+                return empty(trim($v->tipo));
+            })->count();
+        } catch (\Exception $e) {
+            $totalAgricola = 0;
+            $totalConstruccion = 0;
+            $sinTipo = 0;
+        }
+
+        // === ALERTAS DE INVENTARIO: STOCK BAJO Y AGOTADO ===
+        try {
+            $productosBajoStock = Producto::whereColumn('stock_actual', '<=', 'stock_minimo')
+                ->where('stock_minimo', '>', 0)
+                ->where('stock_actual', '>', 0)
+                ->orderBy('stock_actual')
+                ->limit(5)
+                ->get();
+
+            $productosAgotados = Producto::where('stock_actual', 0)
+                ->orderBy('nombre')
+                ->limit(5)
+                ->get();
+        } catch (\Exception $e) {
+            \Log::error('Error al cargar productos con bajo stock o agotados: ' . $e->getMessage());
+            $productosBajoStock = collect();
+            $productosAgotados = collect();
+        }
+
+        // Retornar vista con todas las variables
+        return view('dashboard', compact(
             'totalViajes',
             'totalGastos',
             'viajesEnCurso',
             'totalProductos',
             'gastosPorVehiculo',
-            'viajesPorMes',
-            'meses',
             'vehiculosParaMantenimiento',
             'choferesVencidos',
-            'viajesActivos'
+            'viajesPorMes',
+            'meses',
+            'totalAgricola',
+            'totalConstruccion',
+            'sinTipo',
+            'productosBajoStock',      // ← Nueva variable
+            'productosAgotados'        // ← Nueva variable
         ));
     }
 
     /**
-     * Mostrar el panel de alertas (opcional, si querés una página aparte)
+     * Mostrar la página de alertas.
      */
     public function alertas()
     {
-        $vehiculosParaMantenimiento = Vehiculo::whereNotNull('kilometraje_actual')
-            ->whereRaw('kilometraje_actual >= ultimo_mantenimiento_km + intervalo_mantenimiento')
-            ->get();
+        // Vehículos próximos a mantenimiento (en los próximos 15 días)
+        try {
+            $vehiculosParaMantenimiento = Vehiculo::whereNotNull('proximo_mantenimiento')
+                ->where('proximo_mantenimiento', '<=', now()->addDays(15))
+                ->get();
+        } catch (\Exception $e) {
+            $vehiculosParaMantenimiento = collect();
+        }
 
-        $choferesVencidos = Chofer::where('licencia_vencimiento', '<', now())->get();
+        // Choferes con licencia vencida
+        try {
+            $choferesVencidos = Chofer::whereNotNull('licencia_vencimiento')
+                ->where('licencia_vencimiento', '<', now())
+                ->get();
+        } catch (\Exception $e) {
+            $choferesVencidos = collect();
+        }
 
-        $viajesEnCurso = Viaje::where('estado', 'en curso')
-            ->with('chofer')
-            ->get();
+        // Viajes en curso
+        try {
+            $viajesEnCurso = Viaje::where('estado', 'en curso')->count();
+        } catch (\Exception $e) {
+            $viajesEnCurso = 0;
+        }
 
-        $proximosMantenimientos = Vehiculo::whereNotNull('kilometraje_actual')
-            ->whereRaw('kilometraje_actual + 5000 >= ultimo_mantenimiento_km + intervalo_mantenimiento')
-            ->whereRaw('kilometraje_actual < ultimo_mantenimiento_km + intervalo_mantenimiento')
-            ->get();
-
+        // Retornar vista de alertas
         return view('dashboard.alertas', compact(
             'vehiculosParaMantenimiento',
             'choferesVencidos',
-            'viajesEnCurso',
-            'proximosMantenimientos'
+            'viajesEnCurso'
         ));
     }
 }

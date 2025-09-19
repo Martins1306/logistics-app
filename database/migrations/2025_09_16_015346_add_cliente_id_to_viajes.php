@@ -9,15 +9,19 @@ return new class extends Migration
     public function up()
     {
         Schema::table('viajes', function (Blueprint $table) {
-            $table->foreignId('chofer_id')->nullable()->constrained('choferes')->onDelete('set null');
+            if (!Schema::hasColumn('viajes', 'cliente_id')) {
+                $table->foreignId('cliente_id')->nullable()->constrained('clientes')->onDelete('set null');
+            }
         });
     }
 
     public function down()
     {
         Schema::table('viajes', function (Blueprint $table) {
-            $table->dropForeign(['chofer_id']);
-            $table->dropColumn('chofer_id');
+            if (Schema::hasColumn('viajes', 'cliente_id')) {
+                $table->dropForeign(['cliente_id']);
+                $table->dropColumn('cliente_id');
+            }
         });
     }
 };

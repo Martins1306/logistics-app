@@ -7,8 +7,8 @@ use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ViajeController;
 use App\Http\Controllers\ProductoController;
-
-
+use App\Http\Controllers\MantenimientoController;
+use App\Http\Controllers\ClienteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,22 +28,34 @@ Route::get('/', function () {
 
 // Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/dashboard/alertas', [DashboardController::class, 'alertas'])->name('dashboard.alertas');
+Route::get('/dashboard/pdf', [DashboardController::class, '__invoke'])->name('dashboard.pdf');
 
 // Recursos principales del sistema
 Route::resource('vehiculos', VehiculoController::class);
-Route::resource('gastos', GastoController::class);
-Route::resource('viajes', ViajeController::class);
-Route::resource('productos', ProductoController::class);
 Route::resource('choferes', ChoferController::class);
+Route::resource('productos', ProductoController::class);
+Route::resource('viajes', ViajeController::class);
+Route::resource('gastos', GastoController::class);
 
-// Ruta para el PDF del Dashboard (si lo implementamos)
-Route::get('/dashboard/pdf', [DashboardController::class, '__invoke'])->name('dashboard.pdf');
-Route::resource('mantenimientos', \App\Http\Controllers\MantenimientoController::class)->except(['index', 'show']);
+// Mantenimientos: anidados bajo vehículos
 
-// Ruta para el dashboard principal
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::prefix('mantenimientos')->group(function () {
+    Route::post('/', [MantenimientoController::class, 'store'])->name('mantenimientos.store');
+    Route::get('/{id}/edit', [MantenimientoController::class, 'edit'])->name('mantenimientos.edit');
+    Route::put('/{id}', [MantenimientoController::class, 'update'])->name('mantenimientos.update');
+    Route::delete('/{id}', [MantenimientoController::class, 'destroy'])->name('mantenimientos.destroy');
+});
 
-// Ruta para el panel de alertas
-Route::get('/alertas', [DashboardController::class, 'alertas'])->name('dashboard.alertas');
-// Asegurarse de que esta ruta esté (o ya existe)
-Route::get('/vehiculos/{id}', [\App\Http\Controllers\VehiculoController::class, 'show'])->name('vehiculos.show');
+// Ruta específica: crear mantenimiento asociado a un vehículo
+    Route::get('/vehiculos/{id}/mantenimientos/create', [
+    MantenimientoController::class, 
+    'create'
+])->name('mantenimientos.create');
+    Route::resource('productos', ProductoController::class);
+
+// Clientes 15/9/25
+    Route::resource('clientes', ClienteController::class);
+    
+    // Dentro del grupo auth
+    Route::post('/productos/{id}/ajustar-stock', [ProductoController::class, 'ajustarStock'])->name('productos.ajustar.stock');

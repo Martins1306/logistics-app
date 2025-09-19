@@ -18,6 +18,20 @@
         </select>
     </div>
 
+    <!-- Nuevo: Chofer -->
+    <div class="mb-3">
+        <label class="form-label">Chofer (opcional)</label>
+        <select name="chofer_id" class="form-control">
+            <option value="">Sin chofer</option>
+            @foreach($choferes as $c)
+                <option value="{{ $c->id }}" {{ old('chofer_id') == $c->id ? 'selected' : '' }}>
+                    {{ $c->nombre }} (Lic: {{ $c->licencia_numero }})
+                </option>
+            @endforeach
+        </select>
+        <small class="text-muted">Puede usarse para seguros personales, multas, etc.</small>
+    </div>
+
     <div class="mb-3">
         <label class="form-label">Tipo de Gasto</label>
         <select name="tipo" class="form-control" required>

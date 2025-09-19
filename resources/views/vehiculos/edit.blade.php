@@ -27,19 +27,19 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Tipo de Vehículo</label>
-                <select name="tipo" class="form-control" required>
-                    <option value="">Seleccionar tipo</option>
-                    <option value="camión" {{ old('tipo', $vehiculo->tipo) == 'camión' ? 'selected' : '' }}>Camión</option>
-                    <option value="camioneta" {{ old('tipo', $vehiculo->tipo) == 'camioneta' ? 'selected' : '' }}>Camioneta</option>
-                    <option value="bascula" {{ old('tipo', $vehiculo->tipo) == 'bascula' ? 'selected' : '' }}>Bascúla</option>
-                    <option value="acoplado" {{ old('tipo', $vehiculo->tipo) == 'acoplado' ? 'selected' : '' }}>Acoplado</option>
-                    <option value="semirremolque" {{ old('tipo', $vehiculo->tipo) == 'semirremolque' ? 'selected' : '' }}>Semirremolque</option>
-                    <option value="tolva" {{ old('tipo', $vehiculo->tipo) == 'tolva' ? 'selected' : '' }}>Tolva</option>
-                </select>
-            </div>
-        </div>
+         <div class="mb-3">
+             <label class="form-label"><strong>Tipo de Vehículo</strong></label>
+             <select name="tipo" class="form-control" required>
+               <option value="">Seleccionar tipo</option>
+               <option value="camion" {{ old('tipo') == 'camion' ? 'selected' : '' }}>Camión</option>
+               <option value="camioneta" {{ old('tipo') == 'camioneta' ? 'selected' : '' }}>Camioneta</option>
+              <option value="bascula" {{ old('tipo') == 'bascula' ? 'selected' : '' }}>Báscula</option>
+              <option value="acoplado" {{ old('tipo') == 'acoplado' ? 'selected' : '' }}>Acoplado</option>
+              <option value="semiremolque" {{ old('tipo') == 'semiremolque' ? 'selected' : '' }}>Semiremolque</option>
+              <option value="tolva" {{ old('tipo') == 'tolva' ? 'selected' : '' }}>Tolva</option>
+            </select>
+     </div>
+    </div>
         <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label">Capacidad (kg)</label>
@@ -51,6 +51,45 @@
                 <label class="form-label">Fecha de Compra</label>
                 <input type="date" name="fecha_compra" class="form-control" value="{{ old('fecha_compra', $vehiculo->fecha_compra) }}" required>
             </div>
+        </div>
+    </div>
+    <!-- Kilometraje Actual -->
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label"><strong>Kilometraje Actual (km)</strong></label>
+            <input type="number" name="kilometraje_actual" 
+               class="form-control" 
+               value="{{ old('kilometraje_actual', $vehiculo->kilometraje_actual ?? '') }}" 
+               min="0"
+               placeholder="Ej: 85000">
+            <small class="text-muted">Kilómetros recorridos hasta hoy.</small>
+     </div>
+    </div>
+
+    <!-- Último Mantenimiento (km) -->
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label class="form-label"><strong>Último Mantenimiento (km)</strong></label>
+        <input type="number" name="ultimo_mantenimiento_km" 
+               class="form-control" 
+               value="{{ old('ultimo_mantenimiento_km', $vehiculo->ultimo_mantenimiento_km ?? '') }}" 
+               min="0"
+               placeholder="Ej: 82000">
+        <small class="text-muted">Kilometraje en el que se realizó el último mantenimiento.</small>
+    </div>
+    </div>
+
+    <!-- Intervalo de Mantenimiento -->
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label"><strong>Intervalo de Mantenimiento (km)</strong></label>
+            <input type="number" name="intervalo_mantenimiento" 
+               class="form-control" 
+               value="{{ old('intervalo_mantenimiento', $vehiculo->intervalo_mantenimiento ?? '10000') }}" 
+               min="1000"
+               step="1000"
+               placeholder="Ej: 10000">
+            <small class="text-muted">Cada cuántos km debe hacerse mantenimiento (ej: 10000).</small>
         </div>
     </div>
 

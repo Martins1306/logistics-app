@@ -8,52 +8,53 @@
 
     <div class="mb-3">
         <label class="form-label">Nombre</label>
-        <input type="text" name="nombre" class="form-control" value="{{ old('nombre') }}" required>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Categoría</label>
-                <select name="categoria" class="form-control" required>
-                    <option value="">Seleccionar</option>
-                    <option value="construcción" {{ old('categoria') == 'construcción' ? 'selected' : '' }}>Construcción</option>
-                    <option value="frutas" {{ old('categoria') == 'frutas' ? 'selected' : '' }}>Frutas</option>
-                    <option value="hortalizas" {{ old('categoria') == 'hortalizas' ? 'selected' : '' }}>Hortalizas</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Unidad</label>
-                <select name="unidad" class="form-control" required>
-                    <option value="">Seleccionar</option>
-                    <option value="kg" {{ old('unidad') == 'kg' ? 'selected' : '' }}>Kilogramo (kg)</option>
-                    <option value="m³" {{ old('unidad') == 'm³' ? 'selected' : '' }}>Metro cúbico (m³)</option>
-                    <option value="unidad" {{ old('unidad') == 'unidad' ? 'selected' : '' }}>Unidad</option>
-                    <option value="bolsa" {{ old('unidad') == 'bolsa' ? 'selected' : '' }}>Bolsa</option>
-                    <option value="litro" {{ old('unidad') == 'litro' ? 'selected' : '' }}>Litro</option>
-                </select>
-            </div>
-        </div>
+        <input type="text" name="nombre" class="form-control" value="{{ old('nombre') }}" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+        @error('nombre') <div class="text-danger small">{{ $message }}</div> @enderror
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Precio (opcional)</label>
-        <input type="number" name="precio" step="0.01" class="form-control" value="{{ old('precio') }}" placeholder="0.00">
+        <label class="form-label">Categoría</label>
+        <select name="categoria" class="form-control" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+            <option value="">Seleccionar categoría</option>
+            <option value="hortalizas" {{ old('categoria') == 'hortalizas' ? 'selected' : '' }}>Hortalizas</option>
+            <option value="frutas" {{ old('categoria') == 'frutas' ? 'selected' : '' }}>Frutas</option>
+            <option value="construcción" {{ old('categoria') == 'construcción' ? 'selected' : '' }}>Construcción</option>
+        </select>
+        @error('categoria') <div class="text-danger small">{{ $message }}</div> @enderror
     </div>
 
-    <!-- Mostrar errores de validación -->
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="mb-3">
+        <label class="form-label">Unidad de Medida</label>
+        <select name="unidad" class="form-control" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+            <option value="">Seleccionar unidad</option>
+            <option value="kg" {{ old('unidad') == 'kg' ? 'selected' : '' }}>kg</option>
+            <option value="m³" {{ old('unidad') == 'm³' ? 'selected' : '' }}>m³</option>
+            <option value="unidad" {{ old('unidad') == 'unidad' ? 'selected' : '' }}>unidad</option>
+            <option value="bolsa" {{ old('unidad') == 'bolsa' ? 'selected' : '' }}>bolsa</option>
+            <option value="litro" {{ old('unidad') == 'litro' ? 'selected' : '' }}>litro</option>
+        </select>
+        @error('unidad') <div class="text-danger small">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Precio ($)</label>
+        <input type="number" step="0.01" name="precio" class="form-control" value="{{ old('precio') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+        @error('precio') <div class="text-danger small">{{ $message }}</div> @enderror
+    </div>
+
+    <!-- Campos de inventario -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Stock Actual</label>
+            <input type="number" name="stock_actual" class="form-control" value="{{ old('stock_actual', 0) }}" min="0" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+            @error('stock_actual') <div class="text-danger small">{{ $message }}</div> @enderror
         </div>
-    @endif
+        <div class="col-md-6">
+            <label class="form-label">Stock Mínimo</label>
+            <input type="number" name="stock_minimo" class="form-control" value="{{ old('stock_minimo', 0) }}" min="0" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+            @error('stock_minimo') <div class="text-danger small">{{ $message }}</div> @enderror
+        </div>
+    </div>
 
     <button type="submit" class="btn btn-success btn-sm">Guardar Producto</button>
 

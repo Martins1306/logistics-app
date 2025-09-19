@@ -3,7 +3,7 @@
 @section('content')
 <h1>Editar Gasto</h1>
 
-<form action="{{ route('gastos.update', $gasto) }}" method="POST"> 
+<form action="{{ route('gastos.update', $gasto->id) }}" method="POST"> 
     @csrf
     @method('PUT')
 
@@ -17,6 +17,20 @@
                 </option>
             @endforeach
         </select>
+    </div>
+
+    <!-- Chofer -->
+    <div class="mb-3">
+        <label class="form-label">Chofer (opcional)</label>
+        <select name="chofer_id" class="form-control">
+            <option value="">Sin chofer</option>
+            @foreach($choferes as $c)
+                <option value="{{ $c->id }}" {{ old('chofer_id', $gasto->chofer_id) == $c->id ? 'selected' : '' }}>
+                    {{ $c->nombre }} (Lic: {{ $c->licencia_numero }})
+                </option>
+            @endforeach
+        </select>
+        <small class="text-muted">Asigna al chofer si el gasto es personal (ej: seguro, multa).</small>
     </div>
 
     <div class="mb-3">
