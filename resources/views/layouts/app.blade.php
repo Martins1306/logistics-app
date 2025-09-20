@@ -1,25 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0056b3">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-
-<!-- Service Worker -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js');
-    });
-  }
-</script>
+    <!-- Meta tags básicos -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'LogísticaApp')</title>
 
-    <!-- Bootstrap 5 CSS (CDN) -->
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0056b3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Bootstrap 5 CSS (CDN) - SIN ESPACIOS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Icons -->
@@ -35,6 +28,8 @@
             --border-dark: #444;
             --primary-dark: #0056b3;
             --hover-dark: #004085;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
         }
 
         body {
@@ -249,16 +244,23 @@
                            href="{{ route('choferes.index') }}">
                             <i class="bi bi-person-badge"></i> Choferes
                         </a>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('productos.index') }}">
-                            <i class="fas fa-box"></i> Productos
+                    </li>
+                    <!-- Menú Desplegable: Inventario -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="inventarioDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-warehouse"></i> Inventario
                         </a>
-                    </li>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="inventarioDropdown">
+                            <li><a class="dropdown-item" href="{{ route('productos.index') }}"><i class="fas fa-box me-2"></i>Productos</a></li>
+                            <li><a class="dropdown-item" href="{{ route('proveedores.index') }}"><i class="fas fa-building me-2"></i>Proveedores</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
-                         <a class="nav-link" href="{{ route('clientes.index') }}">
-                          <i class="fas fa-users"></i> Clientes
-                         </a>
+                        <a class="nav-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}"
+                           href="{{ route('clientes.index') }}">
+                            <i class="fas fa-users"></i> Clientes
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('gastos.*') ? 'active' : '' }}"
@@ -297,102 +299,59 @@
     <footer>
         <p>&copy; {{ date('Y') }} <strong>LogísticaApp</strong> – Sistema de Gestión de Transporte</p>
     </footer>
-<!-- Modal de Confirmación Universal -->
+
+    <!-- Modal de Confirmación Universal -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-light">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmModalLabel">¿Guardar cambios?</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ¿Estás seguro de que deseas guardar este registro? Esta acción no se puede deshacer.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success btn-sm" id="confirmSave">Guardar</button>
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">¿Guardar cambios?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas guardar este registro? Esta acción no se puede deshacer.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success btn-sm" id="confirmSave">Guardar</button>
+                </div>
             </div>
         </div>
     </div>
-    </div>
-    
-    @stack('scripts')
 
-<script>
-    // Variable global para almacenar el formulario que se va a enviar
-    let formToSubmit = null;
-
-    // Escuchar todos los formularios con clase 'needs-confirmation'
-    document.addEventListener('DOMContentLoaded', function () {
-        const forms = document.querySelectorAll('form.needs-confirmation');
-
-        forms.forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault(); // No enviar el formulario aún
-
-                // Guardar el formulario para enviarlo después
-                formToSubmit = form;
-
-                // Mostrar el modal
-                const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-                modal.show();
-            });
-        });
-
-        // Botón "Guardar" del modal
-        document.getElementById('confirmSave').addEventListener('click', function () {
-            if (formToSubmit) {
-                formToSubmit.submit(); // Enviar el formulario
-                const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-                modal.hide();
-            }
-        });
-    });
-    </script>
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    @stack('scripts')
-   
+    <!-- Script del modal de confirmación -->
+    <script>
+        // Variable global para almacenar el formulario pendiente
+        let formToSubmit = null;
 
-<script>
-    // Variable para guardar el formulario que se quiere enviar
-    let formToSubmit = null;
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('form.needs-confirmation');
 
-    // Cuando la página carga
-    document.addEventListener('DOMContentLoaded', function () {
-        // Busca todos los formularios con clase 'needs-confirmation'
-        const forms = document.querySelectorAll('form.needs-confirmation');
+            forms.forEach(form => {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
 
-        forms.forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault(); // No envíes el formulario todavía
+                    formToSubmit = form;
+                    const message = form.getAttribute('data-message') || 
+                                   '¿Estás seguro de que deseas guardar este registro? Esta acción no se puede deshacer.';
+                    
+                    document.querySelector('#confirmModal .modal-body').textContent = message;
+                    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+                });
+            });
 
-                // Guarda el formulario para usarlo después
-                formToSubmit = form;
-
-                // Obtiene el mensaje personalizado (o uno por defecto)
-                const message = form.getAttribute('data-message') || 
-                               '¿Estás seguro de que deseas guardar este registro? Esta acción no se puede deshacer.';
-
-                // Pon ese mensaje en el modal
-                document.querySelector('#confirmModal .modal-body').textContent = message;
-
-                // Muestra el modal
-                const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-                modal.show();
+            document.getElementById('confirmSave').addEventListener('click', function () {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                    bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+                }
             });
         });
+    </script>
 
-        // Cuando haces clic en "Guardar" en el modal
-        document.getElementById('confirmSave').addEventListener('click', function () {
-            if (formToSubmit) {
-                formToSubmit.submit(); // Envía el formulario
-                const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-                modal.hide();
-            }
-        });
-    });
-</script>
+    @stack('scripts')
 </body>
 </html>

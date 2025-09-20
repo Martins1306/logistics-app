@@ -9,6 +9,7 @@ use App\Http\Controllers\ViajeController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ProveedorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,3 +60,5 @@ Route::resource('gastos', GastoController::class);
     
     // Dentro del grupo auth
     Route::post('/productos/{id}/ajustar-stock', [ProductoController::class, 'ajustarStock'])->name('productos.ajustar.stock');
+ // Proveedores auth
+ Route::resource('proveedores', ProveedorController::class);
