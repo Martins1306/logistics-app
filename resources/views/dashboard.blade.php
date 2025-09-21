@@ -2,15 +2,15 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row mb-4">
+    <div class="row mb-2">
         <div class="col-12">
-            <h2 class="h4 mb-0 text-light">📊 Dashboard General</h2>
+            <h2 class="h4 mb-0 text-light">📊 Tablero de Control </h2>
             <p class="text-muted small">Resumen de operaciones y alertas</p>
         </div>
     </div>
 
     <!-- Tarjetas de resumen -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-2">
         <div class="col-6 col-md-3">
             <div class="card bg-dark text-white shadow-sm">
                 <div class="card-body p-3">
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Alertas rápidas -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-2">
         <div class="col-md-4">
             <div class="card bg-danger bg-opacity-10 border-danger border shadow-sm">
                 <div class="card-body p-3">
@@ -101,7 +101,7 @@
                 <div class="card-header p-2">
                     <h6 class="mb-0 h6">Gastos por Vehículo</h6>
                 </div>
-                <div class="card-body p-3" style="height: 200px; overflow-y: auto;">
+                <div class="card-body p-3" style="height: 170px; overflow-y: auto;">
                     @if(isset($gastosPorVehiculo) && !$gastosPorVehiculo->isEmpty())
                         <ul class="list-group list-group-flush list-group-sm">
                             @foreach($gastosPorVehiculo as $g)
@@ -136,7 +136,7 @@
                     <h6 class="mb-0 h6">Viajes Completados (últimos 12 meses)</h6>
                 </div>
                 <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-end" style="height: 167px">
+                    <div class="d-flex justify-content-between align-items-end" style="height: 140px">
                         @foreach($viajesPorMes as $index => $count)
                             <div class="text-center" style="flex: 1; min-width: 20px;">
                                 <div style="
@@ -158,10 +158,10 @@
     </div>
 </div>
 <!-- Alertas de Inventario -->
-<div class="row g-3 mt-4">
+<div class="row g-3 mt-0">
     <!-- Stock Bajo -->
     <div class="col-md-6">
-        <div class="card bg-dark text-white shadow-sm" style="height: 250px; display: flex; flex-direction: column;">
+        <div class="card bg-dark text-white shadow-sm" style="height: 170px; display: flex; flex-direction: column;">
             <div class="card-header p-2 d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                 <h6 class="mb-0 h6">Stock Bajo</h6>
@@ -190,7 +190,7 @@
 
     <!-- Agotados -->
     <div class="col-md-6">
-        <div class="card bg-dark text-white shadow-sm" style="height: 250px; display: flex; flex-direction: column;">
+        <div class="card bg-dark text-white shadow-sm" style="height: 170px; display: flex; flex-direction: column;">
             <div class="card-header p-2 d-flex align-items-center">
                 <i class="fas fa-times-circle text-danger me-2"></i>
                 <h6 class="mb-0 h6">Agotados</h6>
