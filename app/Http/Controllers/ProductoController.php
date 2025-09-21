@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\MovimientoInventario;
 use Illuminate\Http\Request;
+use App\Models\Compra;
 
 class ProductoController extends Controller
 {
@@ -50,17 +51,25 @@ class ProductoController extends Controller
      */
     public function show($id)
     {
-        // 🔁 Cargar producto FRESKO desde la base
         $producto = Producto::findOrFail($id);
     
+        // Movimientos de inventario (entradas/salidas)
         $movimientos = MovimientoInventario::where('producto_id', $id)
             ->with('referencia', 'usuario')
             ->latest()
             ->get();
     
-        return view('productos.show', compact('producto', 'movimientos'));
+        // Últimas compras donde aparece este producto
+        $compras = Compra::whereHas('detalles', function ($q) use ($id) {
+            $q->where('producto_id', $id);
+        })
+        ->with(['proveedor', 'detalles.producto'])
+        ->orderBy('fecha_compra', 'desc')
+        ->take(5)
+        ->get();
+    
+        return view('productos.show', compact('producto', 'movimientos', 'compras'));
     }
-
     /**
      * Mostrar formulario de edición.
      */

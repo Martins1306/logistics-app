@@ -136,7 +136,7 @@
                     <h6 class="mb-0 h6">Viajes Completados (últimos 12 meses)</h6>
                 </div>
                 <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-end" style="height: 150px">
+                    <div class="d-flex justify-content-between align-items-end" style="height: 167px">
                         @foreach($viajesPorMes as $index => $count)
                             <div class="text-center" style="flex: 1; min-width: 20px;">
                                 <div style="

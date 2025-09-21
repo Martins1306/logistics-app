@@ -157,7 +157,37 @@
                 )">
             <i class="fas fa-sliders-h me-1"></i>Ajustar Stock
         </button>
-
+<!-- Historial de Compras -->
+@if(isset($compras) && $compras->isNotEmpty())
+    <h5 class="mt-4"><i class="fas fa-shopping-cart text-success"></i> Historial de Compras</h5>
+    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #444; border-radius: 0.375rem; margin-bottom: 1.5rem;">
+        <table class="table table-dark table-striped table-sm" style="font-size: 0.9rem; margin: 0;">
+            <thead style="background-color: #000;">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unit.</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($compras as $c)
+                    @php
+                        $detalle = $c->detalles->firstWhere('producto_id', $producto->id);
+                    @endphp
+                    <tr>
+                        <td>{{ \Carbon\Carbon::parse($c->fecha_compra)->format('d/m') }}</td>
+                        <td>{{ $c->proveedor->nombre }}</td>
+                        <td>{{ $detalle->cantidad }} {{ $producto->unidad }}</td>
+                        <td>${{ number_format($detalle->precio_unitario, 2, ',', '.') }}</td>
+                        <td>${{ number_format($detalle->cantidad * $detalle->precio_unitario, 2, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
         <a href="{{ route('productos.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-1"></i>Volver al listado
         </a>

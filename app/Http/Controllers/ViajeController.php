@@ -7,7 +7,7 @@ use App\Models\Vehiculo;
 use App\Models\Producto;
 use App\Models\Chofer;
 use App\Models\Cliente;
-use App\Models\MovimientoInventario;
+use App\Models\MovimientoInventario; // ← Nuevo: para registrar salidas
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -100,26 +100,27 @@ class ViajeController extends Controller
         // Sincronizar productos
         $this->syncProductosConViaje($viaje, $request);
 
-        // 🔁 Recargar el viaje con los productos asignados (fresco de la DB)
-        $viaje = Viaje::with('productos')->findOrFail($viaje->id);
-
         // ✅ REGISTRAR SALIDA DE PRODUCTOS DEL INVENTARIO
         foreach ($viaje->productos as $producto) {
             $cantidad = $producto->pivot->cantidad ?? 0;
-            if ($cantidad > 0 && $producto->stock_actual >= $cantidad) {
-                // Restar del stock
-                $producto->decrement('stock_actual', $cantidad);
+            if ($cantidad > 0) {
+                // Solo si hay stock suficiente
+                if ($producto->stock_actual >= $cantidad) {
+                    // Restar del stock
+                    $producto->decrement('stock_actual', $cantidad);
 
-                // Registrar movimiento
-                MovimientoInventario::create([
-                    'producto_id' => $producto->id,
-                    'tipo' => 'salida',
-                    'cantidad' => $cantidad,
-                    'motivo' => 'Asignado a viaje #' . $viaje->id,
-                    'referencia_id' => $viaje->id,
-                    'referencia_tipo' => Viaje::class,
-                    'usuario_id' => auth()->check() ? auth()->id() : null,
-                ]);
+                    // Registrar movimiento
+                    MovimientoInventario::create([
+                        'producto_id' => $producto->id,
+                        'tipo' => 'salida',
+                        'cantidad' => $cantidad,
+                        'motivo' => 'Asignado a viaje #' . $viaje->id,
+                        'referencia_id' => $viaje->id,
+                        'referencia_tipo' => Viaje::class,
+                        'usuario_id' => auth()->check() ? auth()->id() : null,
+                    ]);
+                }
+                // Si no hay stock, podrías agregar una alerta opcional
             }
         }
 
@@ -215,11 +216,8 @@ class ViajeController extends Controller
         // Sincronizar productos
         $this->syncProductosConViaje($viaje, $request);
 
-        // 🔁 Recargar el viaje con productos actualizados
-        $viaje = Viaje::with('productos')->findOrFail($viaje->id);
-
         // ✅ AJUSTAR STOCK POR CAMBIOS EN PRODUCTOS
-        $productosActuales = $viaje->productos->keyBy('id');
+        $productosActuales = $viaje->fresh()->productos->keyBy('id');
 
         foreach ($productosAnteriores as $id => $producto) {
             $cantidadAnterior = $producto->pivot->cantidad ?? 0;
@@ -294,7 +292,7 @@ class ViajeController extends Controller
      */
     public function destroy($id)
     {
-        $viaje = Viaje::with('productos')->findOrFail($id);
+        $viaje = Viaje::findOrFail($id);
         $vehiculo = $viaje->vehiculo;
 
         // ✅ DEVOLVER PRODUCTOS AL STOCK

@@ -9,10 +9,9 @@ class Vehiculo extends Model
 {
     use HasFactory;
 
-    // Nombre de la tabla en la base de datos
     protected $table = 'vehiculos';
 
-    // Campos que se pueden asignar masivamente
+    // ✅ Campos que se pueden asignar masivamente
     protected $fillable = [
         'patente',
         'marca',
@@ -22,46 +21,44 @@ class Vehiculo extends Model
         'fecha_compra',
         'ultimo_mantenimiento_km',
         'kilometraje_actual',
-        'intervalo_mantenimiento',
+        'intervalo_mantenimiento', // cada cuántos km se hace mantenimiento
     ];
 
-    // Atributos que deben ser tratados como fechas
-    protected $dates = [
-        'fecha_compra',
-        'created_at',
-        'updated_at'
-    ];
-
-    // Tipos de atributos (opcional, más moderno que $dates)
+    // ✅ Fechas correctamente tipadas
     protected $casts = [
         'fecha_compra' => 'date',
     ];
 
-    // Relación: un vehículo tiene muchos viajes
+    // Relaciones
     public function viajes()
     {
         return $this->hasMany(Viaje::class);
     }
 
-    // Relación: un vehículo tiene muchos mantenimientos
     public function mantenimientos()
     {
         return $this->hasMany(Mantenimiento::class);
     }
 
-    // Accesor: próximo mantenimiento (en km)
+    // ✅ Accesor: próximo mantenimiento (calculado)
     public function getProximoMantenimientoAttribute()
     {
         $ultimo = $this->ultimo_mantenimiento_km ?? 0;
-        $intervalo = $this->intervalo_mantenimiento ?? 10000; // valor por defecto: cada 10.000 km
+        $intervalo = $this->intervalo_mantenimiento ?? 10000;
         return $ultimo + $intervalo;
     }
 
-    // Método: ¿el vehículo necesita mantenimiento?
+    // ✅ ¿Necesita mantenimiento?
     public function necesitaMantenimiento()
     {
         $kmActual = $this->kilometraje_actual ?? 0;
-        $proximo = $this->getProximoMantenimientoAttribute();
-        return $kmActual >= $proximo;
+        return $kmActual >= $this->proximo_mantenimiento;
+    }
+
+    // ✅ ¿Próximos 1000 km al mantenimiento?
+    public function proximoAMantenimiento()
+    {
+        $kmActual = $this->kilometraje_actual ?? 0;
+        return $kmActual >= ($this->proximo_mantenimiento - 1000);
     }
 }

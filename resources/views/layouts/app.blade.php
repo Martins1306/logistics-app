@@ -244,18 +244,35 @@
                            href="{{ route('choferes.index') }}">
                             <i class="bi bi-person-badge"></i> Choferes
                         </a>
-                    </li>
                     <!-- Menú Desplegable: Inventario -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="inventarioDropdown" role="button"
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-warehouse"></i> Inventario
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="inventarioDropdown">
-                            <li><a class="dropdown-item" href="{{ route('productos.index') }}"><i class="fas fa-box me-2"></i>Productos</a></li>
-                            <li><a class="dropdown-item" href="{{ route('proveedores.index') }}"><i class="fas fa-building me-2"></i>Proveedores</a></li>
-                        </ul>
-                    </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="inventarioDropdown" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-warehouse me-2"></i>
+                <span>Inventario</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="inventarioDropdown" style="min-width: 200px;">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center" href="{{ route('productos.index') }}">
+                        <i class="fas fa-box me-2 opacity-75" style="width: 18px; text-align: center;"></i>
+                        <span>Productos</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center" href="{{ route('proveedores.index') }}">
+                        <i class="fas fa-building me-2 opacity-75" style="width: 18px; text-align: center;"></i>
+                        <span>Proveedores</span>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider m-1"></li>
+                <li>
+            <a class="dropdown-item d-flex align-items-center" href="{{ route('compras.index') }}">
+                <i class="fas fa-shopping-cart me-2 opacity-75" style="width: 18px; text-align: center;"></i>
+                <span>Compras</span>
+            </a>
+        </li>
+    </ul>
+</li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}"
                            href="{{ route('clientes.index') }}">

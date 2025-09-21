@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehiculo;
-use App\Models\Viaje;
-use App\Models\Mantenimiento;
 use Illuminate\Http\Request;
 
 class VehiculoController extends Controller
@@ -14,7 +12,7 @@ class VehiculoController extends Controller
      */
     public function index()
     {
-        $vehiculos = Vehiculo::all();
+        $vehiculos = Vehiculo::orderBy('marca')->orderBy('modelo')->get();
         return view('vehiculos.index', compact('vehiculos'));
     }
 
@@ -35,23 +33,27 @@ class VehiculoController extends Controller
             'patente' => 'required|string|max:10|unique:vehiculos,patente',
             'marca' => 'required|string|max:50',
             'modelo' => 'required|string|max:50',
-            'tipo' => 'required|in:camion,camioneta,bascula,acoplado,semiremolque,tolva',
-            'capacidad_kg' => 'required|numeric|min:100',
-            'fecha_compra' => 'required|date',
-            'kilometraje_actual' => 'nullable|integer|min:0',
+            'tipo' => 'required|in:camion,camioneta,semirremolque,acoplado,tractocamion',
+            'capacidad_kg' => 'nullable|integer|min:100',
+            'fecha_compra' => 'nullable|date',
             'ultimo_mantenimiento_km' => 'nullable|integer|min:0',
+            'kilometraje_actual' => 'nullable|integer|min:0',
             'intervalo_mantenimiento' => 'nullable|integer|min:1000',
-        
+            'estado' => 'required|in:activo,inactivo,en mantenimiento',
+            'notas' => 'nullable|string|max:1000',
+        ], [
+            'patente.unique' => 'Ya existe un vehículo con esa patente.',
+            'tipo.in' => 'El tipo de vehículo seleccionado no es válido.',
         ]);
 
-        Vehiculo::create($request->all());
+        $vehiculo = Vehiculo::create($request->all());
 
-        return redirect()->route('vehiculos.index')
+        return redirect()->route('vehiculos.show', $vehiculo->id)
             ->with('success', '✅ Vehículo agregado correctamente.');
     }
 
     /**
-     * Mostrar los detalles de un vehículo, incluyendo viajes y mantenimientos.
+     * Mostrar los detalles de un vehículo.
      */
     public function show($id)
     {
@@ -74,34 +76,46 @@ class VehiculoController extends Controller
     public function update(Request $request, $id)
     {
         $vehiculo = Vehiculo::findOrFail($id);
-    
+
         $request->validate([
-            'patente' => 'required|unique:vehiculos,patente,' . $id,
-            'marca' => 'required|string|max:255',
-            'modelo' => 'required|string|max:255',
-            'tipo' => 'required|in:camion,semirremolque,acoplado,tractocamion',
+            'patente' => 'required|string|max:10|unique:vehiculos,patente,' . $id,
+            'marca' => 'required|string|max:50',
+            'modelo' => 'required|string|max:50',
+            'tipo' => 'required|in:camion,camioneta,semirremolque,acoplado,tractocamion',
+            'capacidad_kg' => 'nullable|integer|min:100',
+            'fecha_compra' => 'nullable|date',
+            'ultimo_mantenimiento_km' => 'nullable|integer|min:0',
             'kilometraje_actual' => 'nullable|integer|min:0',
-            'proximo_mantenimiento' => 'nullable|date|after_or_equal:today',
+            'intervalo_mantenimiento' => 'nullable|integer|min:1000',
             'estado' => 'required|in:activo,inactivo,en mantenimiento',
+            'notas' => 'nullable|string|max:1000',
         ], [
             'patente.unique' => 'Ya existe un vehículo con esa patente.',
-            'patente.required' => 'La patente es obligatoria.',
+            'tipo.in' => 'El tipo de vehículo seleccionado no es válido.',
         ]);
-    
+
         $vehiculo->update($request->all());
-    
+
         return redirect()->route('vehiculos.show', $vehiculo->id)
             ->with('info', '✅ Vehículo actualizado correctamente.');
     }
+
     /**
      * Eliminar un vehículo.
      */
     public function destroy($id)
     {
         $vehiculo = Vehiculo::findOrFail($id);
+
+        // Prevenir eliminación si tiene viajes asociados
+        if ($vehiculo->viajes()->count() > 0) {
+            return redirect()->route('vehiculos.index')
+                ->withErrors('No se puede eliminar un vehículo con viajes registrados.');
+        }
+
         $vehiculo->delete();
 
         return redirect()->route('vehiculos.index')
-            ->with('success', '🗑️ Vehículo eliminado correctamente.');
+            ->with('warning', '🗑️ Vehículo eliminado correctamente.');
     }
 }
