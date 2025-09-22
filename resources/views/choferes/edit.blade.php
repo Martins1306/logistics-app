@@ -53,9 +53,42 @@
             <div class="mb-3">
                 <label class="form-label">Vencimiento de Licencia</label>
                 <input type="date" name="licencia_vencimiento" class="form-control" 
-                       value="{{ old('licencia_vencimiento', $chofer->licencia_vencimiento) }}" required>
+                       value="{{ old('licencia_vencimiento', $chofer->licencia_vencimiento ? \Carbon\Carbon::parse($chofer->licencia_vencimiento)->format('Y-m-d') : '') }}" >
+           </div>
+        </div>
+         <!-- Dirección Detallada -->
+         <div class="mb-3">
+            <label class="form-label">Dirección Completa</label>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" name="calle" class="form-control" placeholder="Calle"
+                        value="{{ old('calle') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="numero" class="form-control" placeholder="Número"
+                        value="{{ old('numero') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="codigo_postal" class="form-control" placeholder="Código Postal"
+                        value="{{ old('codigo_postal') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                </div>
+            </div>
+            <div class="row g-2 mt-2">
+                <div class="col-md-4">
+                    <input type="text" name="localidad" class="form-control" placeholder="Localidad"
+                        value="{{ old('localidad') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="partido" class="form-control" placeholder="Partido"
+                        value="{{ old('partido') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="provincia" class="form-control" placeholder="Provincia"
+                        value="{{ old('provincia') }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                </div>
             </div>
         </div>
+
         <div class="col-12">
             <div class="mb-3">
                 <label class="form-label">Observaciones</label>

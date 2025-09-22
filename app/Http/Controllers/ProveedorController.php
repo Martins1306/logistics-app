@@ -34,7 +34,12 @@ class ProveedorController extends Controller
             'contacto' => 'nullable|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
-            'direccion' => 'nullable|string|max:500',
+            'calle' => 'nullable|string|max:255',
+            'numero' => 'nullable|string|max:10',
+            'codigo_postal' => 'nullable|string|max:10',
+            'localidad' => 'nullable|string|max:100',
+            'partido' => 'nullable|string|max:100',
+            'provincia' => 'nullable|string|max:100',
             'notas' => 'nullable|string',
         ]);
 
@@ -74,7 +79,12 @@ class ProveedorController extends Controller
             'contacto' => 'nullable|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
-            'direccion' => 'nullable|string|max:500',
+            'calle' => 'nullable|string|max:255',
+            'numero' => 'nullable|string|max:10',
+            'codigo_postal' => 'nullable|string|max:10',
+            'localidad' => 'nullable|string|max:100',
+            'partido' => 'nullable|string|max:100',
+            'provincia' => 'nullable|string|max:100',
             'notas' => 'nullable|string',
         ]);
 

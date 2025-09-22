@@ -97,15 +97,13 @@
                     <input type="text" class="form-control" value="{{ number_format($vehiculo->proximo_mantenimiento, 0, ',', '.') }} km" readonly
                         style="background-color: #444; border: 1px solid #555; color: #fff; font-weight: 500;">
                 </div>
-                <div class="col-md-6">
+                                <div class="col-md-6">
                     <label class="form-label">Estado</label>
-                    @if($vehiculo->necesitaMantenimiento())
-                        <div style="color: #dc3545; font-weight: 500; margin-top: 0.5rem;">⚠️ REQUIERE MANTENIMIENTO</div>
-                    @elseif($vehiculo->proximoAMantenimiento())
-                        <div style="color: #fd7e14; font-weight: 500; margin-top: 0.5rem;">🟡 Próximo a mantenimiento</div>
-                    @else
-                        <div style="color: #28a745; font-weight: 500; margin-top: 0.5rem;">✅ En buen estado</div>
-                    @endif
+                    <select name="estado" class="form-control" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                        <option value="activo" {{ old('estado', $vehiculo->estado) == 'activo' ? 'selected' : '' }}>Activo</option>
+                        <option value="inactivo" {{ old('estado', $vehiculo->estado) == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
+                        <option value="en mantenimiento" {{ old('estado', $vehiculo->estado) == 'en mantenimiento' ? 'selected' : '' }}>En mantenimiento</option>
+                    </select>
                 </div>
             </div>
 

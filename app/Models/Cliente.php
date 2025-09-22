@@ -8,15 +8,17 @@ class Cliente extends Model
 {
     protected $fillable = [
         'nombre',
-        'razon_social',
-        'cuit',
+        'tipo', // ✅ Debe estar aquí
         'telefono',
         'email',
-        'direccion',
-        'localidad',
-        'provincia',
-        'tipo',
+        'cuit',
         'notas',
+        'calle',
+        'numero',
+        'codigo_postal',
+        'localidad',
+        'partido',
+        'provincia',
     ];
 
     // Accesor: nombre corto

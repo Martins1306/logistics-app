@@ -22,6 +22,7 @@ class Vehiculo extends Model
         'ultimo_mantenimiento_km',
         'kilometraje_actual',
         'intervalo_mantenimiento', // cada cuántos km se hace mantenimiento
+        'estado',
     ];
 
     // ✅ Fechas correctamente tipadas

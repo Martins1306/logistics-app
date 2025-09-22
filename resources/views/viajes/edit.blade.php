@@ -92,12 +92,16 @@
 
                 <div class="col-md-6">
                     <label class="form-label" style="color: #eee;">Fecha de Salida</label>
-                    <input type="date" name="fecha_salida" class="form-control" value="{{ old('fecha_salida', $viaje->fecha_salida) }}" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+                    <input type="date" name="fecha_salida" class="form-control" 
+                           value="{{ old('fecha_salida', $viaje->fecha_salida? \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d') : '') }}"
+                           style="background-color: #333; border: 1px solid #555; color: #eee;">
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label" style="color: #eee;">Fecha de Llegada</label>
-                    <input type="date" name="fecha_llegada" class="form-control" value="{{ old('fecha_llegada', $viaje->fecha_llegada) }}" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                    <input type="date" name="fecha_llegada" class="form-control" 
+                           value="{{ old('fecha_llegada', $viaje->fecha_llegada? \Carbon\Carbon::parse($viaje->fecha_llegada)->format('Y-m-d') : '') }}" 
+                           style="background-color: #333; border: 1px solid #555; color: #eee;">
                 </div>
 
                 <div class="col-md-6">

@@ -21,7 +21,7 @@
     <!-- Búsqueda y filtro -->
     <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
         <div class="flex-grow-1" style="min-width: 200px;">
-            <input type="text" id="search-viajes" class="form-control form-control-sm" placeholder="Buscar destino o vehículo..."
+            <input type="text" id="search-viajes" class="form-control form-control-sm" placeholder="Buscar cliente o vehículo..."
                    style="background-color: #333; border: 1px solid #555; color: #eee;">
         </div>
         <select id="filter-estado" class="form-select form-select-sm" style="width: auto; background-color: #333; border: 1px solid #555; color: #eee;">
@@ -47,50 +47,24 @@
         <div class="col-md-3">
             <div style="background: #1a1a1a; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #444;">
                 <strong style="color: #fff;">En Curso</strong><br>
-                @php
-                    $enCurso = 0;
-                    foreach($viajes as $v) {
-                        if (($v->estado ?? '') == 'en curso') $enCurso++;
-                    }
-                @endphp
+                @php $enCurso = 0; foreach($viajes as $v) { if ($v->estado == 'en curso') $enCurso++; } @endphp
                 <span style="color: #fd7e14; font-size: 1.2rem;">{{ $enCurso }}</span>
             </div>
         </div>
-       <!--  <div class="col-md-3">
+        <div class="col-md-3">
             <div style="background: #1a1a1a; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #444;">
                 <strong style="color: #fff;">Agrícolas</strong><br>
-                @php
-                    $agrícola = 0;
-                    foreach($viajes as $v) {
-                        $tipo = strtolower($v->tipo ?? '');
-                        if (strpos($tipo, 'agricol') !== false || 
-                            strpos($tipo, 'hortaliza') !== false || 
-                            strpos($tipo, 'fruta') !== false) {
-                            $agrícola++;
-                        }
-                    }
-                @endphp
-                <span style="color: #28a745; font-size: 1.2rem;">{{ $agrícola }}</span>
+                @php $agricola = 0; foreach($viajes as $v) { if ($v->tipo == 'agricola') $agricola++; } @endphp
+                <span style="color: #28a745; font-size: 1.2rem;">{{ $agricola }}</span>
             </div>
         </div>
         <div class="col-md-3">
             <div style="background: #1a1a1a; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #444;">
                 <strong style="color: #fff;">Construcción</strong><br>
-                @php
-                    $construccion = 0;
-                    foreach($viajes as $v) {
-                        $tipo = strtolower($v->tipo ?? '');
-                        if (strpos($tipo, 'construccion') !== false || 
-                            strpos($tipo, 'materiales') !== false || 
-                            strpos($tipo, 'cemento') !== false ||
-                            strpos($tipo, 'acero') !== false) {
-                            $construccion++;
-                        }
-                    }
-                @endphp
+                @php $construccion = 0; foreach($viajes as $v) { if ($v->tipo == 'construccion') $construccion++; } @endphp
                 <span style="color: #ffc107; font-size: 1.2rem;">{{ $construccion }}</span>
             </div>
-        </div>-->
+        </div>
     </div>
 
     <!-- Tabla con scroll -->
@@ -113,7 +87,7 @@
             <thead style="background-color: #000; color: #fff;">
                 <tr>
                     <th style="padding: 0.5rem 0.6rem; text-align: left;">ID</th>
-                    <th style="padding: 0.5rem 0.6rem; text-align: left;">Destino</th>
+                    <th style="padding: 0.5rem 0.6rem; text-align: left;">Cliente</th>
                     <th style="padding: 0.5rem 0.6rem; text-align: left;">Vehículo</th>
                     <th style="padding: 0.5rem 0.6rem; text-align: left;">Chofer</th>
                     <th style="padding: 0.5rem 0.6rem; text-align: left;">Tipo</th>
@@ -124,14 +98,17 @@
             <tbody>
                 @foreach($viajes as $viaje)
                     @php
-                        // Normalizar tipo
+                        // Nombre del cliente
+                        $clienteNombre = is_object($viaje->cliente) ? $viaje->cliente->nombre : '–';
+
+                        // Tipo de viaje
                         $tipo = strtolower($viaje->tipo ?? '');
-                        $esAgricola = (strpos($tipo, 'agricol') !== false || 
-                                      strpos($tipo, 'hortaliza') !== false || 
-                                      strpos($tipo, 'fruta') !== false);
-                        $esConstruccion = (strpos($tipo, 'construccion') !== false || 
-                                          strpos($tipo, 'materiales') !== false || 
-                                          strpos($tipo, 'cemento') !== false);
+                        $esAgricola = $tipo === 'agricola';
+                        $esConstruccion = $tipo === 'construccion';
+
+                        // Color de tipo
+                        $colorTipo = $esAgricola ? '#28a745' : ($esConstruccion ? '#ffc107' : '#6c757d');
+                        $nombreTipo = $esAgricola ? 'Agrícola' : ($esConstruccion ? 'Construcción' : 'Otro');
 
                         // Color de estado
                         switch ($viaje->estado) {
@@ -141,27 +118,23 @@
                             default: $colorEstado = '#6c757d';
                         }
 
-                        // Color y nombre de tipo
-                        $colorTipo = $esAgricola ? '#28a745' : ($esConstruccion ? '#ffc107' : '#6c757d');
-                        $nombreTipo = $esAgricola ? 'Agrícola' : ($esConstruccion ? 'Construcción' : 'Otro');
-
                         // Datos para filtro
-                        $destino = strtolower($viaje->destino ?? '');
+                        $clienteFiltro = strtolower($clienteNombre);
                         $choferNombre = is_object($viaje->chofer) ? strtolower($viaje->chofer->nombre) : '';
                         $vehiculoPatente = is_object($viaje->vehiculo) ? strtolower($viaje->vehiculo->patente) : '';
                     @endphp
                     <tr 
-                        data-destino="{{ $destino }}"
+                        data-cliente="{{ $clienteFiltro }}"
                         data-chofer="{{ $choferNombre }}"
                         data-vehiculo="{{ $vehiculoPatente }}"
-                        data-tipo="{{ $esAgricola ? 'agrícola' : ($esConstruccion ? 'construccion' : 'otro') }}"
+                        data-tipo="{{ $tipo }}"
                         data-estado="{{ strtolower($viaje->estado ?? '') }}"
                         style="border-bottom: 1px solid #333;">
                         <td style="padding: 0.4rem 0.6rem; color: #fff; font-weight: 500;">
                             {{ $viaje->id }}
                         </td>
                         <td style="padding: 0.4rem 0.6rem; color: #ddd;">
-                            {{ $viaje->destino }}
+                            {{ $clienteNombre }}
                         </td>
                         <td style="padding: 0.4rem 0.6rem; color: #ccc;">
                             {{ is_object($viaje->vehiculo) ? $viaje->vehiculo->patente : '–' }}
@@ -188,7 +161,7 @@
                                 background-color: {{ $colorEstado }};
                                 color: white;
                             ">
-                                {{ ucfirst($viaje->estado ?? '–') }}
+                                {{ ucfirst($viaje->estado) }}
                             </span>
                         </td>
                         <td class="text-end" style="padding: 0.4rem 0.6rem; text-align: right;">
@@ -211,32 +184,31 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var tabla = document.getElementById('tabla-viajes');
-    var searchInput = document.getElementById('search-viajes');
-    var filterSelect = document.getElementById('filter-estado');
+    const tabla = document.getElementById('tabla-viajes');
+    const searchInput = document.getElementById('search-viajes');
+    const filterSelect = document.getElementById('filter-estado');
 
     function filtrar() {
-        var searchTerm = (searchInput && searchInput.value) ? searchInput.value.toLowerCase().trim() : '';
-        var filterValue = (filterSelect && filterSelect.value) ? filterSelect.value.toLowerCase().trim() : '';
+        const searchTerm = (searchInput?.value || '').toLowerCase().trim();
+        const filterValue = (filterSelect?.value || '').toLowerCase().trim();
 
-        var filas = tabla.querySelectorAll('tbody tr');
+        const filas = tabla.querySelectorAll('tbody tr');
 
-        for (var i = 0; i < filas.length; i++) {
-            var row = filas[i];
-            var destino = (row.getAttribute('data-destino') || '').toLowerCase();
-            var chofer = (row.getAttribute('data-chofer') || '').toLowerCase();
-            var vehiculo = (row.getAttribute('data-vehiculo') || '').toLowerCase();
-            var estado = (row.getAttribute('data-estado') || '').toLowerCase();
+        filas.forEach(row => {
+            const cliente = (row.getAttribute('data-cliente') || '').toLowerCase();
+            const chofer = (row.getAttribute('data-chofer') || '').toLowerCase();
+            const vehiculo = (row.getAttribute('data-vehiculo') || '').toLowerCase();
+            const estado = (row.getAttribute('data-estado') || '').toLowerCase();
 
-            var matchSearch = !searchTerm || 
-                destino.includes(searchTerm) || 
+            const matchSearch = !searchTerm || 
+                cliente.includes(searchTerm) || 
                 chofer.includes(searchTerm) || 
                 vehiculo.includes(searchTerm);
 
-            var matchFilter = !filterValue || estado === filterValue;
+            const matchFilter = !filterValue || estado === filterValue;
 
             row.style.display = matchSearch && matchFilter ? '' : 'none';
-        }
+        });
     }
 
     if (searchInput) searchInput.addEventListener('input', filtrar);

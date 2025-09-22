@@ -34,23 +34,32 @@
                     <select name="cliente_id" id="cliente_id" class="form-control" style="background-color: #333; border: 1px solid #555; color: #eee;">
                         <option value="">Seleccionar cliente</option>
                         @foreach($clientes as $cliente)
+                            @php
+                                $direccion = htmlspecialchars($cliente->calle ?? '', ENT_QUOTES) . ' ' . htmlspecialchars($cliente->numero ?? '', ENT_QUOTES);
+                                $localidad = htmlspecialchars($cliente->localidad ?? '', ENT_QUOTES);
+                                $provincia = htmlspecialchars($cliente->provincia ?? '', ENT_QUOTES);
+                            @endphp
                             <option value="{{ $cliente->id }}"
-                                    data-direccion="{{ htmlspecialchars($cliente->direccion ?? '', ENT_QUOTES) }}"
-                                    data-localidad="{{ htmlspecialchars($cliente->localidad ?? '', ENT_QUOTES) }}"
-                                    data-provincia="{{ htmlspecialchars($cliente->provincia ?? '', ENT_QUOTES) }}">
-                                {{ $cliente->nombre }} ({{ ucfirst($cliente->tipo) }})
+                                    data-direccion="{{ trim($direccion) }}"
+                                    data-localidad="{{ $localidad }}"
+                                    data-provincia="{{ $provincia }}">
+                                {{ $cliente->nombre }}
+                                @if($localidad || $provincia)
+                                    ({{ $localidad }}{{ $localidad && $provincia ? ', ' : '' }}{{ $provincia }})
+                                @endif
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- TIPO DE VIAJE (clave para filtrar) -->
+                <!-- TIPO DE VIAJE -->
                 <div class="col-md-6">
                     <label class="form-label" style="color: #eee;">Tipo de Viaje</label>
-                    <select id="tipo_viaje" class="form-control" style="background-color: #333; border: 1px solid #555; color: #eee;">
-                        <option value="">Todos los productos</option>
-                        <option value="agrícola">Distribución de Productos Agrícolas</option>
-                        <option value="construccion">Distribución de Materiales de Construcción</option>
+                    <select name="tipo" id="tipo_viaje" class="form-control" required style="background-color: #333; border: 1px solid #555; color: #eee;">
+                        <option value="">Seleccionar tipo</option>
+                        <option value="agricola" {{ old('tipo') == 'agricola' ? 'selected' : '' }}>Distribución de Productos Agrícolas</option>
+                        <option value="construccion" {{ old('tipo') == 'construccion' ? 'selected' : '' }}>Distribución de Materiales de Construcción</option>
+                        <option value="otros" {{ old('tipo') == 'otros' ? 'selected' : '' }}>Otros</option>
                     </select>
                 </div>
 
@@ -75,7 +84,7 @@
                         <option value="">Seleccionar chofer</option>
                         @foreach($choferes as $c)
                             <option value="{{ $c->id }}" {{ old('chofer_id') == $c->id ? 'selected' : '' }}>
-                                {{ $c->nombre }} (Lic: {{ $c->licencia_numero }})
+                                {{ $c->nombre }} (Lic: {{ $c->licencia_numero ?? '–' }})
                             </option>
                         @endforeach
                     </select>
@@ -103,7 +112,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label" style="color: #eee;">Kilómetros</label>
-                    <input type="number" name="kilometros" class="form-control" value="{{ old('kilometros') }}" required min="1" style="background-color: #333; border: 1px solid #555; color: #eee;">
+                    <input type="number" name="kilometros" class="form-control" value="{{ old('kilometros', 0) }}" required min="1" style="background-color: #333; border: 1px solid #555; color: #eee;">
                 </div>
 
                 <div class="col-md-6">
@@ -146,7 +155,6 @@
                 border-radius: 0.375rem;
                 background-color: #121212;
                 padding: 0;
-                margin: 0;
             ">
                 <table style="
                     width: 100%;
@@ -155,7 +163,6 @@
                     background-color: #121212;
                     color: #eee;
                     margin: 0;
-                    table-layout: fixed;
                 ">
                     <thead style="background-color: #000; color: #fff;">
                         <tr>
@@ -167,25 +174,37 @@
                         </tr>
                     </thead>
                     <tbody id="tabla-productos-body">
-                        <!-- Productos cargados dinámicamente -->
                         @foreach($productos as $producto)
-                            @php $index = $loop->index; @endphp
-                            <tr style="border-bottom: 1px solid #333; background-color: #121212;" 
-                                data-categoria="{{ strtolower(trim($producto->categoria)) }}">
+                            @php
+                                $index = $loop->index;
+                                $categoria = strtolower(trim($producto->categoria ?? ''));
+                                $isSelected = in_array($producto->id, old('producto_id', []));
+                                
+                                // Color por categoría (sin acentos)
+                                if (strpos($categoria, 'agrícola') !== false || strpos($categoria, 'hortaliza') !== false || strpos($categoria, 'fruta') !== false) {
+                                    $bgCategoria = '#28a745';
+                                } elseif (strpos($categoria, 'construccion') !== false || strpos($categoria, 'materiales') !== false || strpos($categoria, 'cemento') !== false) {
+                                    $bgCategoria = '#fd7e14';
+                                } else {
+                                    $bgCategoria = '#6c757d';
+                                }
+                            @endphp
+                            <tr style="border-bottom: 1px solid #333;" 
+                                data-categoria="{{ $categoria }}">
                                 <td style="padding: 0.4rem 0.6rem; text-align: left;">
                                     <input type="checkbox"
                                            name="producto_id[]"
                                            value="{{ $producto->id }}"
                                            id="prod_{{ $producto->id }}"
-                                           {{ in_array($producto->id, old('producto_id', [])) ? 'checked' : '' }}
+                                           {{ $isSelected ? 'checked' : '' }}
                                            class="producto-checkbox"
                                            style="cursor: pointer; transform: scale(1.2);">
                                 </td>
                                 <td style="padding: 0.4rem 0.6rem; color: #ddd;">
                                     <label for="prod_{{ $producto->id }}" style="cursor: pointer; margin: 0;">
                                         <strong>{{ $producto->nombre }}</strong>
-                                        @if($producto->precio)
-                                            <br><small style="color: #aaa;">{{ $producto->precio_formatted }}</small>
+                                        @if(!empty($producto->precio))
+                                            <br><small style="color: #aaa;">$ {{ number_format($producto->precio, 2, ',', '.') }}</small>
                                         @endif
                                     </label>
                                 </td>
@@ -194,10 +213,10 @@
                                         font-size: 0.75rem;
                                         padding: 0.2em 0.5em;
                                         border-radius: 4px;
-                                        background-color: {{ $producto->categoria == 'agrícola' || strpos(strtolower($producto->categoria), 'hortaliza') !== false ? '#28a745' : '#fd7e14' }};
+                                        background-color: {{ $bgCategoria }};
                                         color: white;
                                     ">
-                                        {{ ucfirst($producto->categoria) }}
+                                        {{ ucfirst($producto->categoria ?? '–') }}
                                     </span>
                                 </td>
                                 <td style="padding: 0.4rem 0.6rem; text-align: right;">
@@ -206,14 +225,14 @@
                                            value="{{ old("cantidad.$index", 0) }}"
                                            min="0"
                                            placeholder="0"
-                                           {{ in_array($producto->id, old('producto_id', [])) ? '' : 'disabled' }}
+                                           {{ $isSelected ? '' : 'disabled' }}
                                            style="
                                                width: 70px;
                                                padding: 0.25rem;
                                                text-align: right;
-                                               background-color: {{ in_array($producto->id, old('producto_id', [])) ? '#333' : '#444' }};
+                                               background-color: {{ $isSelected ? '#333' : '#444' }};
                                                border: 1px solid #555;
-                                               color: {{ in_array($producto->id, old('producto_id', [])) ? '#eee' : '#777' }};
+                                               color: {{ $isSelected ? '#eee' : '#777' }};
                                                border-radius: 4px;
                                                font-size: 0.85rem;
                                            ">
@@ -223,13 +242,13 @@
                                            name="notas[]"
                                            value="{{ old("notas.$index") }}"
                                            placeholder="Ej: Frágil"
-                                           {{ in_array($producto->id, old('producto_id', [])) ? '' : 'disabled' }}
+                                           {{ $isSelected ? '' : 'disabled' }}
                                            style="
                                                width: 110px;
                                                padding: 0.25rem;
-                                               background-color: {{ in_array($producto->id, old('producto_id', [])) ? '#333' : '#444' }};
+                                               background-color: {{ $isSelected ? '#333' : '#444' }};
                                                border: 1px solid #555;
-                                               color: {{ in_array($producto->id, old('producto_id', [])) ? '#eee' : '#777' }};
+                                               color: {{ $isSelected ? '#eee' : '#777' }};
                                                border-radius: 4px;
                                                font-size: 0.85rem;
                                            ">
@@ -271,7 +290,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var tipoViajeSelect = document.getElementById('tipo_viaje');
     var tablaBody = document.getElementById('tabla-productos-body');
-    var filas = tablaBody.getElementsByTagName('tr');
+    var filas = tablaBody ? tablaBody.getElementsByTagName('tr') : [];
     var formModified = false;
 
     // Detectar cambios
@@ -280,17 +299,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Filtrar productos por tipo de viaje
-    if (tipoViajeSelect) {
+    if (tipoViajeSelect && tablaBody) {
         tipoViajeSelect.addEventListener('change', function () {
             var tipo = this.value.toLowerCase();
 
             for (var i = 0; i < filas.length; i++) {
                 var row = filas[i];
-                var categoria = row.getAttribute('data-categoria') || '';
+                var categoria = (row.getAttribute('data-categoria') || '').toLowerCase();
 
                 var mostrar = true;
 
-                if (tipo === 'agrícola') {
+                if (tipo === 'agricola') {
                     mostrar = (
                         categoria.indexOf('agrícola') !== -1 ||
                         categoria.indexOf('agricola') !== -1 ||
@@ -303,8 +322,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 } else if (tipo === 'construccion') {
                     mostrar = (
-                        categoria.indexOf('construccion') !== -1 ||
                         categoria.indexOf('construcción') !== -1 ||
+                        categoria.indexOf('construccion') !== -1 ||
                         categoria.indexOf('materiales') !== -1 ||
                         categoria.indexOf('herramienta') !== -1 ||
                         categoria.indexOf('cemento') !== -1 ||
@@ -330,9 +349,10 @@ document.addEventListener('DOMContentLoaded', function () {
             var localidad = option.getAttribute('data-localidad') || '';
             var provincia = option.getAttribute('data-provincia') || '';
 
-            var parts = [direccion.trim(), localidad.trim(), provincia.trim()].filter(function (part) {
-                return part !== '';
-            });
+            var parts = [];
+            if (direccion.trim()) parts.push(direccion.trim());
+            if (localidad.trim()) parts.push(localidad.trim());
+            if (provincia.trim()) parts.push(provincia.trim());
 
             if (parts.length > 0) {
                 destinoInput.value = parts.join(', ');
@@ -359,16 +379,18 @@ document.addEventListener('DOMContentLoaded', function () {
         })(checkboxes[j]);
     }
 
-    // Confirmar salida
+    // Confirmar salida si hay cambios
     var links = document.querySelectorAll('a');
     for (var l = 0; l < links.length; l++) {
-        links[l].addEventListener('click', function (e) {
-            if (formModified && !this.href.includes('#') && !this.closest('button')) {
-                if (!confirm('Tiene cambios sin guardar.\n\n¿Desea salir sin guardar?')) {
-                    e.preventDefault();
+        if (!links[l].closest('button')) {
+            links[l].addEventListener('click', function (e) {
+                if (formModified && !this.href.includes('#')) {
+                    if (!confirm('Tiene cambios sin guardar.\n\n¿Desea salir sin guardar?')) {
+                        e.preventDefault();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 });
 </script>

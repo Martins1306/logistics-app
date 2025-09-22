@@ -16,12 +16,19 @@ class Chofer extends Model
     // Campos que se pueden asignar masivamente
     protected $fillable = [
         'nombre',
-        'apellido',
-        'dni',
-        'licencia_tipo',
-        'licencia_vencimiento',
         'telefono',
-        'observaciones',
+        'email',
+        'licencia_numero',
+        'licencia_categoria',
+        'licencia_vencimiento',
+        'notas',
+        // Dirección detallada
+        'calle',
+        'numero',
+        'codigo_postal',
+        'localidad',
+        'partido',
+        'provincia',
     ];
 
     // Atributos de fecha

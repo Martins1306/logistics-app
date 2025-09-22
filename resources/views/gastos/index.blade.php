@@ -111,17 +111,16 @@
                             <!-- Botón VER -->
                             <a href="{{ route('gastos.show', $g->id) }}"
                                style="
-                                   display: inline-flex;
+                                   display: inline-block;
                                    align-items: center;
                                    gap: 0.3rem;
                                    background-color: #198754;
                                    color: white !important;
                                    text-decoration: none;
-                                   padding: 0.25rem 0.5rem;
+                                   padding: 0.15rem 0.3rem;
                                    border-radius: 4px;
-                                   font-size: 0.85rem;
-                                   font-weight: bold;
-                                   margin-right: 0.5rem;
+                                   font-size: 0.8rem;
+                                   margin-right: 0.25rem;
                                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                               "
                                title="Ver detalle">
@@ -131,16 +130,15 @@
                             <!-- Botón EDITAR -->
                             <a href="{{ route('gastos.edit', $g->id) }}"
                                style="
-                                   display: inline-flex;
+                                   display: inline-block;
                                    align-items: center;
                                    gap: 0.3rem;
                                    background-color: #0d6efd;
                                    color: white !important;
                                    text-decoration: none;
-                                   padding: 0.25rem 0.5rem;
+                                   padding: 0.15rem 0.3rem;
                                    border-radius: 4px;
-                                   font-size: 0.85rem;
-                                   font-weight: bold;
+                                   font-size: 0.8rem;
                                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                               "
                                title="Editar">

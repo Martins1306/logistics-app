@@ -62,7 +62,7 @@
                         –
                     @endif
                 </p>
-                <p style="margin: 0.4rem 0;"><strong>Estado:</strong> 
+                 <p style="margin: 0.4rem 0;"><strong>Estado:</strong> 
                     @php
                         switch ($vehiculo->estado) {
                             case 'activo':
@@ -80,6 +80,7 @@
                     @endphp
                     <span style="color: {{ $estadoColor }}; font-weight: 500;">{{ $estadoTexto }}</span>
                 </p>
+                   
             </div>
         </div>
 

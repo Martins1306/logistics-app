@@ -49,6 +49,7 @@
                     <th style="padding: 0.5rem; text-align: left;">Nombre</th>
                     <th style="padding: 0.5rem; text-align: left;">Contacto</th>
                     <th style="padding: 0.5rem; text-align: left;">Teléfono</th>
+                    <th style="padding: 0.5rem; text-align: left;">Localidad</th>
                     <th style="padding: 0.5rem; text-align: right;">Acciones</th>
                 </tr>
             </thead>
@@ -61,14 +62,15 @@
                         <td style="padding: 0.4rem 0.6rem; color: #ddd;">{{ $p->nombre }}</td>
                         <td style="padding: 0.4rem 0.6rem; color: #ccc;">{{ $p->contacto ?? '–' }}</td>
                         <td style="padding: 0.4rem 0.6rem; color: #ccc;">{{ $p->telefono ?? '–' }}</td>
+                        <td style="padding: 0.4rem 0.6rem; color: #ccc;">{{ $p->localidad ?? '–' }}</td>
                         <td class="text-end" style="padding: 0.4rem 0.6rem; text-align: right;">
                             <a href="{{ route('proveedores.show', $p->id) }}" 
-                               style="color: #198754; text-decoration: none; margin-right: 0.5rem; font-size: 0.9rem;">
-                                Ver
+                            style="display: inline-block; padding: 0.15rem 0.3rem; font-size: 0.8rem; color: #fff; background-color: #198754; border-radius: 4px; text-decoration: none;">
+                                <i class="fas fa-edit" style="margin-right: 0.2rem;"></i>Ver
                             </a>
                             <a href="{{ route('proveedores.edit', $p->id) }}" 
-                               style="color: #0d6efd; text-decoration: none; font-size: 0.9rem;">
-                                Editar
+                               style="display: inline-block; padding: 0.15rem 0.3rem; font-size: 0.8rem; color: #fff; background-color: #0d6efd; border-radius: 4px; text-decoration: none;">
+                              <i class="fas fa-edit" style="margin-right: 0.2rem;"></i>Editar
                             </a>
                         </td>
                     </tr>

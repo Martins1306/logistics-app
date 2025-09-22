@@ -64,27 +64,32 @@
                         font-weight: 600;
                     ">Patente</th>
                     <th style="
-                        padding: 0.5rem 0.6rem; 
+                        padding: 0.5rem 0.6rem;
                         text-align: left;
                         font-weight: 600;
                     ">Marca/Modelo</th>
                     <th style="
                         padding: 0.5rem 0.6rem; 
+                        width:100px;
                         text-align: left;
                         font-weight: 600;
+                        white-space: nowrap;
                     ">Tipo</th>
                     <th style="
-                        padding: 0.5rem 0.6rem; 
+                        padding: 0.5rem 0.6rem;
+                        width:300px;  
                         text-align: left;
                         font-weight: 600;
                     ">Km Actual</th>
                     <th style="
                         padding: 0.5rem 0.6rem; 
+                        width:10px; 
                         text-align: left;
                         font-weight: 600;
                     ">Estado</th>
                     <th style="
                         padding: 0.5rem 0.6rem; 
+                        width:80px;
                         text-align: right;
                         font-weight: 600;
                     ">Acciones</th>
@@ -120,8 +125,8 @@
                             padding: 0.4rem 0.6rem; 
                             color: #ddd;
                         ">
-                            <div style="font-weight: 500;">{{ $vehiculo->marca }}</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">{{ $vehiculo->modelo }}</div>
+                            <div style="font-weight: 500;">{{ $vehiculo->marca }} / {{ $vehiculo->modelo }}</div>
+
                         </td>
                         <td style="padding: 0.4rem 0.6rem;">
                             <span style="
@@ -136,12 +141,12 @@
                             </span>
                         </td>
                         <td style="
-                            padding: 0.4rem 0.6rem; 
+                            padding: 0.4rem 0.4rem; 
                             color: #ccc;
                         ">
                             {{ number_format($vehiculo->kilometraje_actual ?? 0, 0, '', '.') }} km
                         </td>
-                        <td style="padding: 0.4rem 0.6rem;">
+                        <td style="padding: 0.4rem 0.4rem;">
                             @if($vehiculo->necesitaMantenimiento())
                                 <span style="
                                     font-size: 0.7rem;

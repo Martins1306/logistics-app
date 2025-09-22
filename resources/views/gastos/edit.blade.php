@@ -52,7 +52,9 @@
 
     <div class="mb-3">
         <label class="form-label">Fecha</label>
-        <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $gasto->fecha) }}" required>
+        <input type="date" name="fecha" class="form-control" 
+               value="{{ old('fecha', $gasto->fecha? \Carbon\Carbon::parse($gasto->fecha)->format('Y-m-d') : '') }}"
+               style="background-color: #333; border: 1px solid #555; color: #eee;">
     </div>
 
     <div class="mb-3">

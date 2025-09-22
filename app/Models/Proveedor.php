@@ -11,11 +11,17 @@ class Proveedor extends Model
 
     protected $fillable = [
         'nombre',
-        'contacto',
-        'telefono',
-        'email',
-        'direccion',
-        'notas',
+    'contacto',
+    'telefono',
+    'email',
+    'notas',
+    // Dirección detallada
+    'calle',
+    'numero',
+    'codigo_postal',
+    'localidad',
+    'partido',
+    'provincia',
     ];
 
     public function compras()

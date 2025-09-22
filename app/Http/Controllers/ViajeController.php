@@ -7,9 +7,10 @@ use App\Models\Vehiculo;
 use App\Models\Producto;
 use App\Models\Chofer;
 use App\Models\Cliente;
-use App\Models\MovimientoInventario; // ← Nuevo: para registrar salidas
+use App\Models\MovimientoInventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Collection;
 
 class ViajeController extends Controller
 {
@@ -18,7 +19,7 @@ class ViajeController extends Controller
      */
     public function index()
     {
-        $viajes = Viaje::with('vehiculo', 'chofer', 'cliente', 'productos')
+        $viajes = Viaje::with('vehiculo', 'chofer', 'cliente')
                        ->orderBy('fecha_salida', 'desc')
                        ->get();
         return view('viajes.index', compact('viajes'));
@@ -91,11 +92,11 @@ class ViajeController extends Controller
         // 🔧 Normalizar tipo de viaje
         $tipoNormalizado = $this->normalizarTipoViaje($request->input('tipo'));
 
-        // Crear el viaje con tipo estandarizado
-        $viaje = Viaje::create(array_merge(
-            $request->except('tipo'),
-            ['tipo' => $tipoNormalizado]
-        ));
+        // Crear el viaje
+        $data = $request->except(['_token', 'producto_id', 'cantidad', 'notas']);
+        $data['tipo'] = $tipoNormalizado;
+
+        $viaje = Viaje::create($data);
 
         // Sincronizar productos
         $this->syncProductosConViaje($viaje, $request);
@@ -103,31 +104,27 @@ class ViajeController extends Controller
         // ✅ REGISTRAR SALIDA DE PRODUCTOS DEL INVENTARIO
         foreach ($viaje->productos as $producto) {
             $cantidad = $producto->pivot->cantidad ?? 0;
-            if ($cantidad > 0) {
-                // Solo si hay stock suficiente
-                if ($producto->stock_actual >= $cantidad) {
-                    // Restar del stock
-                    $producto->decrement('stock_actual', $cantidad);
+            if ($cantidad > 0 && $producto->stock_actual >= $cantidad) {
+                $producto->decrement('stock_actual', $cantidad);
 
-                    // Registrar movimiento
-                    MovimientoInventario::create([
-                        'producto_id' => $producto->id,
-                        'tipo' => 'salida',
-                        'cantidad' => $cantidad,
-                        'motivo' => 'Asignado a viaje #' . $viaje->id,
-                        'referencia_id' => $viaje->id,
-                        'referencia_tipo' => Viaje::class,
-                        'usuario_id' => auth()->check() ? auth()->id() : null,
-                    ]);
-                }
-                // Si no hay stock, podrías agregar una alerta opcional
+                MovimientoInventario::create([
+                    'producto_id' => $producto->id,
+                    'tipo' => 'salida',
+                    'cantidad' => $cantidad,
+                    'motivo' => 'Asignado a viaje #' . $viaje->id,
+                    'referencia_id' => $viaje->id,
+                    'referencia_tipo' => get_class($viaje),
+                    'usuario_id' => auth()->check() ? auth()->id() : null,
+                ]);
             }
         }
 
         // Actualizar kilometraje del vehículo
         $vehiculo = $viaje->vehiculo;
-        $vehiculo->kilometraje_actual = ($vehiculo->kilometraje_actual ?? 0) + $viaje->kilometros;
-        $vehiculo->save();
+        if ($vehiculo) {
+            $vehiculo->kilometraje_actual = ($vehiculo->kilometraje_actual ?? 0) + $viaje->kilometros;
+            $vehiculo->save();
+        }
 
         return redirect()->route('viajes.show', $viaje->id)
             ->with('success', '✅ Viaje registrado correctamente.');
@@ -204,11 +201,11 @@ class ViajeController extends Controller
         // 🔧 Normalizar tipo de viaje
         $tipoNormalizado = $this->normalizarTipoViaje($request->input('tipo'));
 
-        // Actualizar viaje con tipo estandarizado
-        $viaje->update(array_merge(
-            $request->except('tipo'),
-            ['tipo' => $tipoNormalizado]
-        ));
+        // Actualizar viaje
+        $data = $request->except(['_token', '_method', 'producto_id', 'cantidad', 'notas']);
+        $data['tipo'] = $tipoNormalizado;
+
+        $viaje->update($data);
 
         // Obtener productos anteriores antes de sincronizar
         $productosAnteriores = $viaje->productos->keyBy('id');
@@ -216,17 +213,19 @@ class ViajeController extends Controller
         // Sincronizar productos
         $this->syncProductosConViaje($viaje, $request);
 
+        // Refrescar productos actuales
+        $viaje->load('productos');
+        $productosActuales = $viaje->productos->keyBy('id');
+
         // ✅ AJUSTAR STOCK POR CAMBIOS EN PRODUCTOS
-        $productosActuales = $viaje->fresh()->productos->keyBy('id');
-
         foreach ($productosAnteriores as $id => $producto) {
-            $cantidadAnterior = $producto->pivot->cantidad ?? 0;
-            $cantidadActual = $productosActuales->has($id) ? $productosActuales[$id]->pivot->cantidad : 0;
+            $cantAnterior = $producto->pivot->cantidad ?? 0;
+            $cantActual = $productosActuales->has($id) ? $productosActuales[$id]->pivot->cantidad : 0;
 
-            $diferencia = $cantidadAnterior - $cantidadActual;
+            $diferencia = $cantAnterior - $cantActual;
 
             if ($diferencia > 0) {
-                // Se quitó cantidad → devolver al stock
+                // Devolver stock
                 $producto->increment('stock_actual', $diferencia);
 
                 MovimientoInventario::create([
@@ -235,11 +234,11 @@ class ViajeController extends Controller
                     'cantidad' => $diferencia,
                     'motivo' => 'Devolución por edición de viaje #' . $viaje->id,
                     'referencia_id' => $viaje->id,
-                    'referencia_tipo' => Viaje::class,
+                    'referencia_tipo' => get_class($viaje),
                     'usuario_id' => auth()->check() ? auth()->id() : null,
                 ]);
             } elseif ($diferencia < 0) {
-                // Se agregó más cantidad → restar del stock
+                // Quitar más stock
                 $nuevaCantidad = abs($diferencia);
                 if ($producto->stock_actual >= $nuevaCantidad) {
                     $producto->decrement('stock_actual', $nuevaCantidad);
@@ -250,14 +249,14 @@ class ViajeController extends Controller
                         'cantidad' => $nuevaCantidad,
                         'motivo' => 'Ajuste en viaje #' . $viaje->id,
                         'referencia_id' => $viaje->id,
-                        'referencia_tipo' => Viaje::class,
+                        'referencia_tipo' => get_class($viaje),
                         'usuario_id' => auth()->check() ? auth()->id() : null,
                     ]);
                 }
             }
         }
 
-        // Productos nuevos (que no estaban antes)
+        // Productos nuevos
         foreach ($productosActuales as $id => $producto) {
             if (!$productosAnteriores->has($id)) {
                 $cantidad = $producto->pivot->cantidad ?? 0;
@@ -270,7 +269,7 @@ class ViajeController extends Controller
                         'cantidad' => $cantidad,
                         'motivo' => 'Agregado a viaje #' . $viaje->id,
                         'referencia_id' => $viaje->id,
-                        'referencia_tipo' => Viaje::class,
+                        'referencia_tipo' => get_class($viaje),
                         'usuario_id' => auth()->check() ? auth()->id() : null,
                     ]);
                 }
@@ -279,9 +278,11 @@ class ViajeController extends Controller
 
         // Ajustar kilometraje del vehículo
         $vehiculo = $viaje->vehiculo;
-        $diferencia = $viaje->kilometros - $kmAnterior;
-        $vehiculo->kilometraje_actual = max(0, ($vehiculo->kilometraje_actual ?? 0) + $diferencia);
-        $vehiculo->save();
+        if ($vehiculo) {
+            $diferencia = $viaje->kilometros - $kmAnterior;
+            $vehiculo->kilometraje_actual = max(0, ($vehiculo->kilometraje_actual ?? 0) + $diferencia);
+            $vehiculo->save();
+        }
 
         return redirect()->route('viajes.show', $viaje->id)
             ->with('info', '✅ Viaje actualizado correctamente.');
@@ -307,15 +308,15 @@ class ViajeController extends Controller
                     'cantidad' => $cantidad,
                     'motivo' => 'Devolución por eliminación de viaje #' . $viaje->id,
                     'referencia_id' => $viaje->id,
-                    'referencia_tipo' => Viaje::class,
+                    'referencia_tipo' => get_class($viaje),
                     'usuario_id' => auth()->check() ? auth()->id() : null,
                 ]);
             }
         }
 
         // Restar kilometraje
-        if ($vehiculo && $vehiculo->kilometraje_actual) {
-            $vehiculo->kilometraje_actual = max(0, $vehiculo->kilometraje_actual - $viaje->kilometros);
+        if ($vehiculo) {
+            $vehiculo->kilometraje_actual = max(0, ($vehiculo->kilometraje_actual ?? 0) - $viaje->kilometros);
             $vehiculo->save();
         }
 
@@ -337,11 +338,13 @@ class ViajeController extends Controller
         $syncData = [];
         foreach ($productoIds as $index => $productoId) {
             if ($productoId) {
+                $cantidad = isset($cantidades[$index]) ? (int)$cantidades[$index] : 0;
+                $nota = isset($notas[$index]) ? $notas[$index] : null;
+
                 $syncData[$productoId] = [
-                    'cantidad' => $cantidades[$index] ?? 0,
-                    'notas' => $notas[$index] ?? null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'cantidad' => $cantidad,
+                    'notas' => $nota,
+                    'updated_at' => \Carbon\Carbon::now(),
                 ];
             }
         }
@@ -350,44 +353,30 @@ class ViajeController extends Controller
     }
 
     /**
-     * Normaliza el tipo de viaje a valores estandarizados.
-     *
-     * @param string|null $tipo
-     * @return string|null
+     * Normaliza el tipo de viaje a valores estandarizados (compatible PHP 7.4)
      */
     private function normalizarTipoViaje($tipo)
     {
-        if (!$tipo) {
+        if (!$tipo || !is_string($tipo)) {
             return null;
         }
 
         $lower = strtolower(trim($tipo));
 
         // Detectar agrícola
-        if (
-            str_contains($lower, 'agricol') ||
-            str_contains($lower, 'hortaliza') ||
-            str_contains($lower, 'fruta') ||
-            str_contains($lower, 'cereal') ||
-            str_contains($lower, 'insumo') ||
-            str_contains($lower, 'semilla') ||
-            str_contains($lower, 'fertilizante')
-        ) {
-            return 'agrícola';
+        $palabrasAgricolas = ['agricol', 'hortaliza', 'fruta', 'cereal', 'insumo', 'semilla', 'fertilizante'];
+        foreach ($palabrasAgricolas as $palabra) {
+            if (strpos($lower, $palabra) !== false) {
+                return 'agricola';
+            }
         }
 
         // Detectar construcción
-        if (
-            str_contains($lower, 'construccion') ||
-            str_contains($lower, 'construcción') ||
-            str_contains($lower, 'materiales') ||
-            str_contains($lower, 'herramienta') ||
-            str_contains($lower, 'cemento') ||
-            str_contains($lower, 'acero') ||
-            str_contains($lower, 'ladrillo') ||
-            str_contains($lower, 'madera')
-        ) {
-            return 'construccion';
+        $palabrasConstruccion = ['construccion', 'materiales', 'herramienta', 'cemento', 'acero', 'ladrillo', 'madera'];
+        foreach ($palabrasConstruccion as $palabra) {
+            if (strpos($lower, $palabra) !== false) {
+                return 'construccion';
+            }
         }
 
         return null;
