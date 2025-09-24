@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Viaje;
 
 class MovimientoInventario extends Model
 {
@@ -10,13 +11,14 @@ class MovimientoInventario extends Model
     protected $table = 'movimientos_inventario';
 
     protected $fillable = [
-        'producto_id',
+        'vehiculo_id',
         'tipo',
-        'cantidad',
-        'motivo',
-        'referencia_id',
-        'referencia_tipo',
-        'usuario_id',
+        'descripcion',
+        'fecha',
+        'kilometraje',
+        'costo_real',
+        'estado',
+        'observaciones', // ✅ Agregado
     ];
 
     public function producto()
@@ -33,4 +35,14 @@ class MovimientoInventario extends Model
     {
         return $this->belongsTo(\App\Models\User::class);
     }
+    /**
+     * Relación con el viaje que generó este movimiento de inventario.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function viaje()
+    {
+        return $this->belongsTo(Viaje::class);
+    }
+
 }

@@ -62,7 +62,10 @@
                         –
                     @endif
                 </p>
-                 <p style="margin: 0.4rem 0;"><strong>Estado:</strong> 
+                <p style="margin: 0.4rem 0;"><strong>Kilometraje Actual:</strong> 
+                    {{ number_format($vehiculo->kilometraje_actual ?? 0, 0, ',', '.') }} km
+                </p>
+                <p style="margin: 0.4rem 0;"><strong>Estado:</strong> 
                     @php
                         switch ($vehiculo->estado) {
                             case 'activo':
@@ -80,31 +83,34 @@
                     @endphp
                     <span style="color: {{ $estadoColor }}; font-weight: 500;">{{ $estadoTexto }}</span>
                 </p>
-                   
             </div>
         </div>
 
         <!-- Alertas de mantenimiento -->
         @php
-            $tieneIntervalo = !empty($vehiculo->intervalo_mantenimiento);
-            $kmActual = $vehiculo->kilometraje_actual ? $vehiculo->kilometraje_actual : 0;
-            $proximoMantenimiento = $vehiculo->proximo_mantenimiento;
-            $necesita = $tieneIntervalo && $kmActual >= $proximoMantenimiento;
-            $proximo = $tieneIntervalo && !$necesita && $kmActual >= ($proximoMantenimiento - 1000);
+            $intervalo = $vehiculo->intervalo_mantenimiento;
+            $kmActual = $vehiculo->kilometraje_actual ?? 0;
+
+            // Calcular próximo mantenimiento (último + intervalo)
+            $ultimoKm = $vehiculo->ultimo_mantenimiento_km ?? 0;
+            $proximoMantenimiento = $intervalo ? ($ultimoKm + $intervalo) : null;
+
+            $necesita = $proximoMantenimiento && $kmActual >= $proximoMantenimiento;
+            $proximo = $proximoMantenimiento && !$necesita && $kmActual >= ($proximoMantenimiento - 1000);
         @endphp
 
-        @if($necesita)
+        @if($necesita && $proximoMantenimiento)
             <div style="margin-top: 1rem; padding: 0.8rem; background-color: #4e1313; border: 1px solid #dc3545; border-radius: 0.375rem; color: #f8d7da;">
                 <strong>⚠️ REQUIERE MANTENIMIENTO INMEDIATO</strong><br>
                 Kilometraje actual: <strong>{{ number_format($kmActual) }} km</strong><br>
                 Próximo mantenimiento: <strong>{{ number_format($proximoMantenimiento) }} km</strong>
             </div>
-        @elseif($proximo)
+        @elseif($proximo && $proximoMantenimiento)
             <div style="margin-top: 1rem; padding: 0.8rem; background-color: #3f3000; border: 1px solid #ffc107; border-radius: 0.375rem; color: #fffbe6;">
                 <strong>🟡 Próximo a mantenimiento</strong><br>
                 A solo {{ number_format($proximoMantenimiento - $kmActual) }} km del próximo servicio.
             </div>
-        @elseif(!$tieneIntervalo)
+        @elseif(!$intervalo)
             <div style="margin-top: 1rem; padding: 0.8rem; background-color: #2a2a2a; border: 1px solid #6c757d; border-radius: 0.375rem; color: #888;">
                 <strong>ℹ️ Sin programa de mantenimiento</strong><br>
                 No se ha definido un intervalo de mantenimiento para este vehículo.
@@ -210,7 +216,8 @@
                         @php
                             $fecha = !empty($m->fecha) ? \Carbon\Carbon::parse($m->fecha)->format('d/m/Y') : '–';
                             $km = $m->kilometraje ? number_format($m->kilometraje) : '–';
-                            $costo = $m->costo ? '$ ' . number_format($m->costo, 2, ',', '.') : '–';
+                            // ✅ Corregido: usa costo_real
+                            $costo = $m->costo_real ? '$ ' . number_format($m->costo_real, 2, ',', '.') : '–';
                         @endphp
                         <tr>
                             <td>{{ ucfirst($m->tipo) }}</td>

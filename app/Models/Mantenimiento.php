@@ -9,20 +9,44 @@ class Mantenimiento extends Model
 {
     use HasFactory;
 
+    /**
+     * Atributos asignables masivamente.
+     *
+     * @var array
+     */
     protected $fillable = [
         'vehiculo_id',
         'tipo',
-        'kilometraje',
-        'fecha',
-        'costo',
         'descripcion',
-        'proveedor',
+        'fecha',
+        'kilometraje',
+        'costo_real',
+        'proveedor',       // ← Agregado: si usás campo texto (no proveedor_id)
+        'estado',
+        'observaciones',
     ];
 
-    protected $dates = ['fecha'];
+    /**
+     * Atributos que deben ser convertidos a Carbon.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'fecha',
+        'created_at',
+        'updated_at',
+    ];
 
+    /**
+     * Relación con el vehículo.
+     */
     public function vehiculo()
     {
         return $this->belongsTo(Vehiculo::class);
     }
+    
+    public function getCostoAttribute()
+{
+    return $this->costo_real;
+}
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Chofer;
 
 class Vehiculo extends Model
 {
@@ -19,10 +20,11 @@ class Vehiculo extends Model
         'tipo',
         'capacidad_kg',
         'fecha_compra',
-        'ultimo_mantenimiento_km',
         'kilometraje_actual',
-        'intervalo_mantenimiento', // cada cuántos km se hace mantenimiento
+        'ultimo_mantenimiento_km',
+        'intervalo_mantenimiento',
         'estado',
+        'chofer_id',
     ];
 
     // ✅ Fechas correctamente tipadas
@@ -61,5 +63,14 @@ class Vehiculo extends Model
     {
         $kmActual = $this->kilometraje_actual ?? 0;
         return $kmActual >= ($this->proximo_mantenimiento - 1000);
+    }
+       
+     // ✅ Si no hay chofer asignado
+    public function choferActual()
+    {
+        if (!$this->chofer_id) {
+            return null;
+        }
+        return $this->belongsTo(Chofer::class, 'chofer_id')->first();
     }
 }

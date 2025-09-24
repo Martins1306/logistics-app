@@ -66,4 +66,13 @@ class Viaje extends Model
         ->withPivot('cantidad', 'notas')  // Campos adicionales en pivote
         ->withTimestamps();               // created_at y updated_at en pivote
     }
+        public function mantenimientos()
+    {
+        return $this->hasMany(Mantenimiento::class);
+    }
+
+    public function viajes()
+    {
+        return $this->hasMany(Viaje::class);
+    }
 }

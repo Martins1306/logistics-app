@@ -39,4 +39,14 @@ class Chofer extends Model
     {
         return $this->hasMany(\App\Models\Viaje::class);
     }
+    /**
+     * Obtiene el chofer actual asignado al vehículo.
+     * Asume que hay un campo 'chofer_id' en la tabla 'vehiculos'.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function choferActual()
+    {
+        return $this->belongsTo(Chofer::class, 'chofer_id');
+    }
 }

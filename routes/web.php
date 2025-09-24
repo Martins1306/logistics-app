@@ -11,6 +11,7 @@ use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ReporteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,3 +66,10 @@ Route::resource('gastos', GastoController::class);
  Route::resource('proveedores', ProveedorController::class);
 // 🔧 Compras
 Route::resource('compras', \App\Http\Controllers\CompraController::class);
+
+// Reportes
+Route::prefix('reportes')->group(function () {
+    Route::get('/', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::post('/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
+    Route::get('/descargar', [ReporteController::class, 'descargar'])->name('reportes.descargar');
+});

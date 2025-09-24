@@ -73,6 +73,15 @@
                        style="background-color: #333; border: 1px solid #555; color: #eee;">
             </div>
         </div>
+
+                <div class="mb-3">
+            <label for="kilometraje_actual">Kilometraje Actual (km)</label>
+            <input type="number" name="kilometraje_actual" id="kilometraje_actual"
+                class="form-control bg-secondary text-light"
+                value="{{ old('kilometraje_actual', $vehiculo->kilometraje_actual) }}"
+                placeholder="Ej: 98000">
+        </div>
+        
         <div class="row mb-3">
     <div class="col-md-6">
         <label class="form-label">Último Mantenimiento (km)</label>
@@ -114,14 +123,7 @@
                        value="{{ old('fecha_compra', $vehiculo->fecha_compra ? \Carbon\Carbon::parse($vehiculo->fecha_compra)->format('Y-m-d') : '') }}"
                        style="background-color: #333; border: 1px solid #555; color: #eee;">
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Estado</label>
-                <select name="estado" class="form-control" style="background-color: #333; border: 1px solid #555; color: #eee;">
-                    <option value="activo" {{ old('estado', $vehiculo->estado) == 'activo' ? 'selected' : '' }}>Activo</option>
-                    <option value="inactivo" {{ old('estado', $vehiculo->estado) == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
-                    <option value="en mantenimiento" {{ old('estado', $vehiculo->estado) == 'en mantenimiento' ? 'selected' : '' }}>En mantenimiento</option>
-                </select>
-            </div>
+            
         </div>
 
         <div class="mb-3">

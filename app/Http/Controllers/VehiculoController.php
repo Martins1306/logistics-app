@@ -59,8 +59,11 @@ class VehiculoController extends Controller
     {
         $vehiculo = Vehiculo::with(['viajes.chofer', 'mantenimientos'])->findOrFail($id);
         return view('vehiculos.show', compact('vehiculo'));
+        
+        $vehiculo = Vehiculo::with(['viajes', 'mantenimientos'])->findOrFail($id);
     }
 
+    
     /**
      * Mostrar el formulario para editar un vehículo.
      */

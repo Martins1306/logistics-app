@@ -284,7 +284,15 @@
                            href="{{ route('gastos.index') }}">
                             <i class="bi bi-cash"></i> Gastos
                         </a>
-                    </li>
+                     </li>
+                <!-- Reportes -->
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="{{ route('reportes.index') }}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reportes</span>
+                    </a>
+                </li>
+
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('dashboard.alertas') ? 'active' : '' }}"
                            href="{{ route('dashboard.alertas') }}">

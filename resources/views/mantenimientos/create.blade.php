@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1 class="mb-4">
+    <h1 class="mb-4 text-light">
         <i class="fas fa-wrench me-2"></i>Registrar Mantenimiento - 
         <strong>{{ $vehiculo->patente }}</strong>
     </h1>
@@ -10,9 +10,9 @@
     <!-- Breadcrumb opcional -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('vehiculos.index') }}">Vehículos</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('vehiculos.show', $vehiculo->id) }}">{{ $vehiculo->patente }}</a></li>
-            <li class="breadcrumb-item active">Nuevo Mantenimiento</li>
+            <li class="breadcrumb-item"><a href="{{ route('vehiculos.index') }}" class="text-secondary">Vehículos</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('vehiculos.show', $vehiculo->id) }}" class="text-secondary">{{ $vehiculo->patente }}</a></li>
+            <li class="breadcrumb-item active text-white">Nuevo Mantenimiento</li>
         </ol>
     </nav>
 
@@ -21,10 +21,11 @@
         <input type="hidden" name="vehiculo_id" value="{{ $vehiculo->id }}">
 
         <div class="row g-3">
+            <!-- Tipo -->
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label"><strong>Tipo de Mantenimiento</strong></label>
-                    <select name="tipo" class="form-control" required>
+                    <label class="form-label text-light"><strong>Tipo de Mantenimiento</strong></label>
+                    <select name="tipo" class="form-control bg-secondary text-light" required>
                         <option value="">Seleccionar tipo</option>
                         <option value="Cambio de aceite" {{ old('tipo') == 'Cambio de aceite' ? 'selected' : '' }}>Cambio de aceite</option>
                         <option value="Correas" {{ old('tipo') == 'Correas' ? 'selected' : '' }}>Correas</option>
@@ -33,41 +34,86 @@
                         <option value="Frenos" {{ old('tipo') == 'Frenos' ? 'selected' : '' }}>Frenos</option>
                         <option value="Filtro" {{ old('tipo') == 'Filtro' ? 'selected' : '' }}>Filtro</option>
                     </select>
+                    @error('tipo')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
+            <!-- Kilometraje actual del vehículo -->
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label"><strong>Kilometraje actual (km)</strong></label>
-                    <input type="number" name="kilometraje" class="form-control" value="{{ old('kilometraje') }}" required min="0">
+                    <label class="form-label text-light"><strong>Kilometraje del Vehículo</strong></label>
+                    <input type="text" class="form-control bg-secondary text-light" 
+                           value="{{ optional($vehiculo)->kilometraje_actual ?? 'No registrado' }}"
+                           readonly>
+                    <div class="form-text text-muted">
+                        Este valor será usado como <strong>kilometraje</strong> del mantenimiento.
+                    </div>
                 </div>
             </div>
 
+            <!-- Fecha -->
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label"><strong>Fecha del mantenimiento</strong></label>
-                    <input type="date" name="fecha" class="form-control" value="{{ old('fecha') }}" required>
+                    <label class="form-label text-light"><strong>Fecha del mantenimiento</strong></label>
+                    <input type="date" name="fecha" class="form-control bg-secondary text-light" value="{{ old('fecha') }}" required>
+                    @error('fecha')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
+            <!-- Costo -->
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label"><strong>Costo ($)</strong></label>
-                    <input type="number" name="costo" step="0.01" class="form-control" value="{{ old('costo') }}" min="0" placeholder="0.00">
+                    <label class="form-label text-light"><strong>Costo ($)</strong></label>
+                    <input type="number" name="costo" step="0.01" class="form-control bg-secondary text-light" 
+                           value="{{ old('costo') }}" min="0" placeholder="0.00">
+                    @error('costo')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
+            <!-- Proveedor -->
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label"><strong>Proveedor</strong></label>
-                    <input type="text" name="proveedor" class="form-control" value="{{ old('proveedor') }}" placeholder="Taller mecánico...">
+                    <label class="form-label text-light"><strong>Proveedor</strong></label>
+                    <input type="text" name="proveedor" class="form-control bg-secondary text-light" 
+                           value="{{ old('proveedor') }}" placeholder="Taller mecánico...">
+                    @error('proveedor')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
+            <!-- Estado -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label text-light"><strong>Estado</strong></label>
+                    <select name="estado" class="form-control bg-secondary text-light" required>
+                        <option value="">Seleccionar estado...</option>
+                        <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                        <option value="en_proceso" {{ old('estado') == 'en_proceso' ? 'selected' : '' }}>En Proceso</option>
+                        <option value="completado" {{ old('estado') == 'completado' ? 'selected' : '' }}>Completado</option>
+                        <option value="cancelado" {{ old('estado') == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
+                    </select>
+                    @error('estado')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Observaciones -->
             <div class="col-12">
                 <div class="mb-3">
-                    <label class="form-label"><strong>Descripción adicional</strong></label>
-                    <textarea name="descripcion" class="form-control" rows="3" placeholder="Detalles del trabajo realizado...">{{ old('descripcion') }}</textarea>
+                    <label for="observaciones" class="form-label text-light">Observaciones</label>
+                    <textarea name="observaciones" class="form-control bg-secondary text-light" rows="3" 
+                              placeholder="Notas adicionales...">{{ old('observaciones') }}</textarea>
+                    @error('observaciones')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
         </div>
@@ -95,9 +141,6 @@
             <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#confirmExitModal">
                 <i class="fas fa-arrow-left me-1"></i>Volver
             </button>
-
-            <!-- Botón directo a vehículo (opcional, más rápido) -->
-            <!-- <a href="{{ route('vehiculos.show', $vehiculo->id) }}" class="btn btn-outline-secondary">Cancelar</a> -->
         </div>
     </form>
 
@@ -129,6 +172,6 @@
 @endsection
 
 @push('scripts')
-<!-- Si usas Font Awesome para iconos -->
+<!-- Font Awesome (opcional si ya lo tenés en el layout) -->
 <script src="https://kit.fontawesome.com/your-kit.js" crossorigin="anonymous"></script>
 @endpush
