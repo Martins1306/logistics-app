@@ -126,7 +126,6 @@
                             color: #ddd;
                         ">
                             <div style="font-weight: 500;">{{ $vehiculo->marca }} / {{ $vehiculo->modelo }}</div>
-
                         </td>
                         <td style="padding: 0.4rem 0.6rem;">
                             <span style="

@@ -12,6 +12,7 @@ use App\Models\MovimientoInventario;
 use App\Models\Mantenimiento;
 use App\Models\Vehiculo;
 use Barryvdh\DomPDF\Facade\Pdf; // Para generar PDF
+use Illuminate\Support\Str;
 
 class ReporteController extends Controller
 {
@@ -64,8 +65,8 @@ class ReporteController extends Controller
                         'ID' => $v->id,
                         'Fecha' => $v->created_at->format('d/m/Y'),
                         'Cliente' => optional($v->cliente)->nombre ?? '-',
-                        'Origen' => $v->origen_direccion ?: '-',
-                        'Destino' => $v->destino_direccion ?: '-',
+                        'Origen' => $v->origen ?: '-',
+                        'Destino' => $v->destino ?: '-',
                         'Tipo' => ucfirst($v->tipo),
                         'Estado' => ucfirst($v->estado),
                         'Vehículo' => optional($v->vehiculo)->patente ?? '-',
@@ -151,16 +152,23 @@ class ReporteController extends Controller
                 break;
         }
 
+        // ✅ Guardamos el reporte y el tipo para acceso futuro
+        session(['ultimo_reporte' => $data]);
+        session(['ultimo_reporte_tipo' => $request->tipo]);
+
         return redirect()->back()->with('reporte', $data);
     }
 
     /**
-     * Descargar el reporte actual como PDF
+     * Descargar el reporte como PDF o CSV
      */
     public function descargar(Request $request)
     {
         $tipo = $request->query('tipo');
-        $reporte = session('reporte');
+        $formato = $request->query('formato', 'pdf'); // por defecto PDF
+
+        // ✅ Leemos el reporte guardado
+        $reporte = session('ultimo_reporte');
 
         if (!$reporte) {
             return redirect()->back()->with('error', 'No hay ningún reporte generado para exportar.');
@@ -172,33 +180,83 @@ class ReporteController extends Controller
                 $titulo = 'Reporte de Viajes';
                 break;
             case 'stock':
-                $titulo = 'Reporte de Movimientos de Stock';
+                $titulo = 'Movimientos de Stock';
                 break;
             case 'choferes':
-                $titulo = 'Reporte de Rendimiento de Choferes';
+                $titulo = 'Rendimiento de Choferes';
                 break;
             case 'mantenimientos':
-                $titulo = 'Reporte de Mantenimientos Programados';
+                $titulo = 'Mantenimientos Programados';
                 break;
             default:
                 $titulo = 'Reporte';
         }
 
-        $fechaGeneracion = now()->format('d/m/Y H:i');
+        if ($formato === 'csv') {
+            return $this->exportarCSV($reporte, $titulo);
+        }
+        
+        // Formato PDF
         $data = [
             'titulo' => $titulo,
             'reporte' => $reporte,
-            'fechaGeneracion' => $fechaGeneracion,
+            'fechaGeneracion' => now()->format('d/m/Y H:i'),
             'headers' => array_keys($reporte[0] ?? []),
         ];
-
+        
         try {
-            $pdf = Pdf::loadView('reportes.pdf', $data)
-                      ->setPaper('a4', 'landscape');
-
-            return $pdf->download("{$titulo}_" . now()->format('Y-m-d') . ".pdf");
+            return $this->exportarPDF($data, $titulo);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al generar el PDF: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Exporta el reporte a CSV (compatible con Excel)
+     */
+    private function exportarCSV($datos, $nombreArchivo)
+{
+    $nombreSanitizado = Str::slug($nombreArchivo, '_');
+    $archivo = storage_path("app/public/reportes/{$nombreSanitizado}_" . now()->format('Y-m-d') . ".csv");
+
+    // Crear directorio si no existe
+    $directorio = dirname($archivo);
+    if (!is_dir($directorio)) {
+        mkdir($directorio, 0755, true);
+    }
+
+    $handle = fopen($archivo, 'w');
+    fwrite($handle, "\xEF\xBB\xBF"); // BOM UTF-8 para Excel
+
+    // Encabezados
+    if (isset($datos[0])) {
+        fputcsv($handle, array_keys($datos[0]), ';'); // separador ; para Excel en español
+    }
+
+    // Filas
+    foreach ($datos as $fila) {
+        fputcsv($handle, array_values($fila), ';');
+    }
+
+    fclose($handle);
+
+    return response()->download($archivo)->deleteFileAfterSend(true);
+}
+    private function exportarPDF($data, $nombreArchivo)
+    {
+        $nombreSanitizado = Str::slug($nombreArchivo, '_');
+        $archivo = storage_path("app/public/reportes/{$nombreSanitizado}_" . now()->format('Y-m-d') . ".pdf");
+
+        // Crear directorio si no existe
+        $directorio = dirname($archivo);
+        if (!is_dir($directorio)) {
+            mkdir($directorio, 0755, true);
+        }
+
+        // Generar y guardar el PDF en disco
+        $pdf = Pdf::loadView('reportes.pdf', $data);
+        file_put_contents($archivo, $pdf->output());
+
+        return response()->download($archivo)->deleteFileAfterSend(true);
     }
 }

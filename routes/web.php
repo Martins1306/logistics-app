@@ -68,8 +68,8 @@ Route::resource('gastos', GastoController::class);
 Route::resource('compras', \App\Http\Controllers\CompraController::class);
 
 // Reportes
-Route::prefix('reportes')->group(function () {
+    Route::prefix('reportes')->group(function () {
     Route::get('/', [ReporteController::class, 'index'])->name('reportes.index');
     Route::post('/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
-    Route::get('/descargar', [ReporteController::class, 'descargar'])->name('reportes.descargar');
+    Route::get('/descargar', [ReporteController::class, 'descargar'])->name('reportes.descargar'); // ✅ Correcto
 });

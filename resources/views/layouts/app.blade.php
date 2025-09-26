@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
 
-    <!-- Bootstrap 5 CSS (CDN) - SIN ESPACIOS -->
+    <!-- Bootstrap 5 CSS (CDN) - Sin espacios -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Icons -->
@@ -244,35 +244,36 @@
                            href="{{ route('choferes.index') }}">
                             <i class="bi bi-person-badge"></i> Choferes
                         </a>
+                    </li>
                     <!-- Menú Desplegable: Inventario -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="inventarioDropdown" role="button"
-            data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-warehouse me-2"></i>
-                <span>Inventario</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="inventarioDropdown" style="min-width: 200px;">
-                <li>
-                    <a class="dropdown-item d-flex align-items-center" href="{{ route('productos.index') }}">
-                        <i class="fas fa-box me-2 opacity-75" style="width: 18px; text-align: center;"></i>
-                        <span>Productos</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item d-flex align-items-center" href="{{ route('proveedores.index') }}">
-                        <i class="fas fa-building me-2 opacity-75" style="width: 18px; text-align: center;"></i>
-                        <span>Proveedores</span>
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider m-1"></li>
-                <li>
-            <a class="dropdown-item d-flex align-items-center" href="{{ route('compras.index') }}">
-                <i class="fas fa-shopping-cart me-2 opacity-75" style="width: 18px; text-align: center;"></i>
-                <span>Compras</span>
-            </a>
-        </li>
-    </ul>
-</li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="inventarioDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-warehouse me-2"></i>
+                            <span>Inventario</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="inventarioDropdown" style="min-width: 200px;">
+                            <li>
+                                <a class="nav-link dropdown-item d-flex align-items-center" href="{{ route('productos.index') }}">
+                                    <i class="fas fa-box me-2 opacity-75" style="width: 18px; text-align: center;"></i>
+                                    <span>Productos</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link dropdown-item d-flex align-items-center" href="{{ route('proveedores.index') }}">
+                                    <i class="fas fa-building me-2 opacity-75" style="width: 18px; text-align: center;"></i>
+                                    <span>Proveedores</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider m-1"></li>
+                            <li>
+                                <a class="nav-link dropdown-item d-flex align-items-center" href="{{ route('compras.index') }}">
+                                    <i class="fas fa-shopping-cart me-2 opacity-75" style="width: 18px; text-align: center;"></i>
+                                    <span>Compras</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}"
                            href="{{ route('clientes.index') }}">
@@ -284,15 +285,14 @@
                            href="{{ route('gastos.index') }}">
                             <i class="bi bi-cash"></i> Gastos
                         </a>
-                     </li>
-                <!-- Reportes -->
-                <li class="nav-item">
-                    <a class="nav-link text-light" href="{{ route('reportes.index') }}">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Reportes</span>
-                    </a>
-                </li>
-
+                    </li>
+                    <!-- Reportes -->
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="{{ route('reportes.index') }}">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('dashboard.alertas') ? 'active' : '' }}"
                            href="{{ route('dashboard.alertas') }}">
@@ -376,7 +376,42 @@
             });
         });
     </script>
+@if (request()->routeIs('reportes.*'))
+<script>
+function descargarCSV() {
+    const tipo = document.querySelector('[name="tipo"]');
+    if (!tipo || !tipo.value) {
+        alert('Selecciona un tipo');
+        return;
+    }
+    if (!document.querySelector('#resultados-reporte table')) {
+        alert('Primero genera un reporte');
+        return;
+    }
+    const url = "{{ route('reportes.descargar') }}?tipo=" + encodeURIComponent(tipo.value) + "&formato=csv";
+    window.open(url, '_blank');
+}
 
+function descargarPDF() {
+    const tipo = document.querySelector('[name="tipo"]');
+    if (!tipo || !tipo.value) {
+        alert('Selecciona un tipo de Reporte');
+        return;
+    }
+    if (!document.querySelector('#resultados-reporte table')) {
+        alert('Primero genera un reporte');
+        return;
+    }
+    const url = "{{ route('reportes.descargar') }}?tipo=" + encodeURIComponent(tipo.value) + "&formato=pdf";
+    window.open(url, '_blank');
+}
+</script>
+@endif
+
+@stack('scripts')
+</body>
+</html>
+    <!-- ✅ Este es el punto clave: scripts se cargan aquí -->
     @stack('scripts')
 </body>
 </html>
